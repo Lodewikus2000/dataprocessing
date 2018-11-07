@@ -27,11 +27,6 @@ def extract_movies(dom):
     - Actors/actresses (comma separated if more than one)
     - Runtime (only a number!)
     """
-
-    # ADD YOUR CODE HERE TO EXTRACT THE ABOVE INFORMATION ABOUT THE
-    # HIGHEST RATED MOVIES
-    # NOTE: FOR THIS EXERCISE YOU ARE ALLOWED (BUT NOT REQUIRED) TO IGNORE
-    # UNICODE CHARACTERS AND SIMPLY LEAVE THEM OUT OF THE OUTPUT.
     movies = []
     list = dom.find_all(class_="lister-item-content")
     for item in list:
@@ -40,11 +35,11 @@ def extract_movies(dom):
 
         rating = item.find(class_="inline-block ratings-imdb-rating")
         rating = rating["data-value"]
-        rating = float(rating)
+        #rating = float(rating)
 
         year = item.find(class_="lister-item-year")
         year = year.string.strip("(I) ")
-        year = int(year)
+        #year = int(year)
 
         actors_list = item.find_all(href=re.compile("adv_li_st"))
         for i in range(len(actors_list)):
@@ -53,9 +48,12 @@ def extract_movies(dom):
 
         runtime = item.find(class_="runtime")
         runtime = runtime.string.strip("min ")
-        runtime = int(runtime)
+        #runtime = int(runtime)
 
         movie = [title, rating, year, actors_string, runtime]
+        for i in range(len(movie)):
+            if len(movie[i]) == 0:
+                movie[i] = "N/A"
         movies.append(movie)
     return movies
 
@@ -68,8 +66,6 @@ def save_csv(outfile, movies):
     writer.writerow(['Title', 'Rating', 'Year', 'Actors', 'Runtime'])
     for movie in movies:
         writer.writerow(movie)
-
-    # ADD SOME CODE OF YOURSELF HERE TO WRITE THE MOVIES TO DISK
 
 
 def simple_get(url):
