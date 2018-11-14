@@ -18,6 +18,8 @@ keys = [
 
 data = []
 
+# Read INPUT_CSV, clean up the data, replace missing or unknown values
+# with np.nan.
 with open(INPUT_CSV, "r", newline="\n") as infile:
     reader = csv.DictReader(infile)
     for row in reader:
@@ -30,32 +32,19 @@ with open(INPUT_CSV, "r", newline="\n") as infile:
             row[key] = value
         data.append(row)
 
-
-
-# output filtered csv
+# Output cleaner csv.
 with open(OUTPUT_CSV, "w", newline="") as outfile:
     writer = csv.DictWriter(outfile, fieldnames=keys, extrasaction="ignore")
     writer.writeheader()
     for row in data:
         writer.writerow(row)
 
-
-all_keys = list(data[0].keys())
-ignored_keys = [x for x in all_keys if x not in keys]
-
-for row in data:
-    for key in ignored_keys:
-        del row[key]
-
-
+# Make list of countries to use as main index for the dataframe.
 index = [row["Country"] for row in data]
-
 dataframe = pd.DataFrame(data, index=index)
 dataframe = dataframe.drop(columns="Country")
 
-pd.set_option("display.max_columns", None)
-#dataframe.dropna(how="any",inplace=True)
-
+# Turn data into actual numbers.
 for key in [
     "Pop. Density (per sq. mi.)", "Infant mortality (per 1000 births)",
     "GDP ($ per capita) dollars"
@@ -74,14 +63,14 @@ print(f"median: {median}")
 print(f"mode: {mode[0]}")
 print(f"standard deviation: {std}")
 
+# Save and show histogram.
+nr_of_bins = 80
 fig, ax = plt.subplots()
-dataframe["GDP ($ per capita) dollars"].plot.hist(bins=100,
+dataframe["GDP ($ per capita) dollars"].plot.hist(bins=nr_of_bins,
     title="GDP ($ per capita) dollars")
 ax.set_xlabel("dollars")
 plt.savefig("GDP.png")
 plt.show()
-
-
 
 minimum = dataframe["Infant mortality (per 1000 births)"].min()
 q1 = dataframe["Infant mortality (per 1000 births)"].quantile(0.25)
@@ -102,8 +91,12 @@ dataframe["Infant mortality (per 1000 births)"].plot.box()
 plt.savefig("Infant_mortality.png")
 plt.show()
 
+# Drop all unnecessary columns.
+for column in dataframe:
+    if column not in keys:
+        dataframe.drop(column, axis=1, inplace=True)
 
 json_data = dataframe.to_json(orient="index")
-json_data = json.dumps(json_data, indent=4, separators=(',', ': '))
+
 with open(OUTPUT_JSON, "w") as outfile:
     outfile.write(json_data)

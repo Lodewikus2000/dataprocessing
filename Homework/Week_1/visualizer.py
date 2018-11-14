@@ -34,9 +34,9 @@ if __name__ == "__main__":
     ax.plot(x,y,color='gold', linestyle='-', marker='o')
     ax.set(xlabel="year", ylabel="average rating",
      title="average rating of IMDB top 50 movies by year")
-    ax.set_xlim(2007.5,2017.5)
+    ax.set_xlim(2007.5, 2017.5)
     plt.xticks(range(2008, 2018, 1))
-    ax.set_ylim(np.min(y)-0.5, np.max(y)+0.5)
+    ax.set_ylim(np.min(y) - 0.5, np.max(y) + 0.5)
     plt.yticks()
     plt.grid(True, 'major', 'y', ls='-', lw=.5, c='k', alpha=.3)
     plt.show()
