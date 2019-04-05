@@ -6,11 +6,12 @@ This script scrapes IMDB and outputs a CSV file with highest rated movies.
 """
 
 import csv
+import re
+from contextlib import closing
 from requests import get
 from requests.exceptions import RequestException
-from contextlib import closing
 from bs4 import BeautifulSoup
-import re
+
 
 TARGET_URL = "https://www.imdb.com/search/title?title_type=feature&release_date=2008-01-01,2018-01-01&num_votes=5000,&sort=user_rating,desc"
 BACKUP_HTML = 'movies.html'
@@ -28,33 +29,43 @@ def extract_movies(dom):
     - Runtime (only a number!)
     """
     movies = []
-    list = dom.find_all(class_="lister-item-content")
-    for item in list:
+    movie_list = dom.find_all(class_="lister-item-content")
+    for item in movie_list:
+        # Find the title.
         title = item.find(href=re.compile("title"))
         title = title.string
 
+        # Find the rating.
         rating = item.find(class_="inline-block ratings-imdb-rating")
         rating = rating["data-value"]
-        #rating = float(rating)
 
+        # Find the year and strip it.
         year = item.find(class_="lister-item-year")
         year = year.string.strip("(I) ")
-        #year = int(year)
 
+        # Find the list of actors.
         actors_list = item.find_all(href=re.compile("adv_li_st"))
-        for i in range(len(actors_list)):
-            actors_list[i] = actors_list[i].string
+
+        # Turns the names into strings.
+        for i, value in enumerate(actors_list):
+            actors_list[i] = value.string
+
+        # Turn the list into one string.
         actors_string = ", ".join(actors_list)
+
 
         runtime = item.find(class_="runtime")
         runtime = runtime.string.strip("min ")
-        #runtime = int(runtime)
 
         movie = [title, rating, year, actors_string, runtime]
-        for i in range(len(movie)):
-            if len(movie[i]) == 0:
+
+        # Fill empty values with "N/A".
+        for i, value in enumerate(movie):
+            if not value:
                 movie[i] = "N/A"
+
         movies.append(movie)
+
     return movies
 
 
@@ -81,7 +92,8 @@ def simple_get(url):
             else:
                 return None
     except RequestException as e:
-        print('The following error occurred during HTTP GET request to {0} : {1}'.format(url, str(e)))
+        print('The following error occurred during HTTP GET request to {0}: {1}'
+              .format(url, str(e)))
         return None
 
 
@@ -97,20 +109,20 @@ def is_good_response(resp):
 
 if __name__ == "__main__":
 
-    # get HTML content at target URL
+    # Get HTML content at target URL.
     html = simple_get(TARGET_URL)
 
-    # save a copy to disk in the current directory, this serves as an backup
+    # Save a copy to disk in the current directory, this serves as a backup
     # of the original HTML, will be used in grading.
     with open(BACKUP_HTML, 'wb') as f:
         f.write(html)
 
-    # parse the HTML file into a DOM representation
+    # Parse the HTML file into a DOM representation.
     dom = BeautifulSoup(html, 'html.parser')
 
-    # extract the movies (using the function you implemented)
+    # Extract the movies (using the function you implemented).
     movies = extract_movies(dom)
 
-    # write the CSV file to disk (including a header)
+    # Write the CSV file to disk (including a header).
     with open(OUTPUT_CSV, 'w', newline='') as output_file:
         save_csv(output_file, movies)

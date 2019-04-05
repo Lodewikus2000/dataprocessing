@@ -14,29 +14,52 @@ INPUT_CSV = "movies.csv"
 START_YEAR = 2008
 END_YEAR = 2018
 
-# Global dictionary for the data
-data_dict = {str(key): [] for key in range(START_YEAR, END_YEAR)}
+# Make a dictionary from the data.
+def get_dict(csv_name):
+    """
+    From a csv with movie ratings, make a dict with years as keys and a list of
+    ratings as values.
+    """
+    data_dict = {str(key): [] for key in range(START_YEAR, END_YEAR)}
 
-with open(INPUT_CSV,newline="") as csvfile:
-    reader = csv.DictReader(csvfile)
-    for row in reader:
-        data_dict[row['Year']].append(float(row['Rating']))
+    with open(csv_name, newline="") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            data_dict[row['Year']].append(float(row['Rating']))
+
+    return data_dict
 
 
 if __name__ == "__main__":
-    x = []
-    y = []
-    for key, value in data_dict.items():
-        x.append(int(key))
-        y.append(np.mean(np.array(value)))
+    years = []
+    average_ratings = []
+
+    # Make a dictionary with average ratings per year.
+    rating_dict = get_dict(INPUT_CSV)
+
+
+    for year, ratings in rating_dict.items():
+        years.append(int(year))
+        average_ratings.append(np.mean(np.array(ratings)))
 
     fig, ax = plt.subplots()
-    ax.plot(x,y,color='gold', linestyle='-', marker='o')
+    ax.plot(years, average_ratings, color='gold', linestyle='-', marker='o')
     ax.set(xlabel="year", ylabel="average rating",
-     title="average rating of IMDB top 50 movies by year")
-    ax.set_xlim(2007.5, 2017.5)
-    plt.xticks(range(2008, 2018, 1))
-    ax.set_ylim(np.min(y) - 0.5, np.max(y) + 0.5)
-    plt.yticks()
+           title="average rating of IMDB top 50 movies by year")
+
+
+    ax.set_xlim(START_YEAR - .5, END_YEAR - .5)
+
+    # Place x-ticks at every year.
+    plt.xticks(range(START_YEAR, END_YEAR, 1))
+
+    y_lower_limit = 0
+    y_upper_limit = 10
+    ax.set_ylim(y_lower_limit, y_upper_limit)
+
+    # Place y-ticks at every integer from 0 to 10.
+    plt.yticks(range(0, 11))
+
     plt.grid(True, 'major', 'y', ls='-', lw=.5, c='k', alpha=.3)
+    plt.savefig('graph.png')
     plt.show()
