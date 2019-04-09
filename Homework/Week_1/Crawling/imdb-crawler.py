@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# Name:
-# Student number:
+# Name: Leo Schreuders
+# Student number: 5742978
 """
 This script crawls the IMDB top 250 movies.
 """
@@ -10,6 +10,7 @@ import csv
 import codecs
 import errno
 import re
+import json
 
 from requests import get
 from requests.exceptions import RequestException
@@ -198,25 +199,102 @@ def scrape_movie_page(dom):
     """
     movie = []
 
+    # Get the JSON from the website and convert it to a dict.
+    movie_json = dom.find(type="application/ld+json")
+    info_dict = json.loads(movie_json.get_text())
 
-    title = dom.find("h1")
-    title.find("span", id="titleYear").decompose()
-    title = title.get_text().strip()
+
+    title = info_dict['name']
     movie.append(title)
 
-    runtime = dom.find("time").attrs
-    runtime = runtime['datetime']
-    runtime = re.sub(r"\D", "", runtime)
-    movie.append(runtime)
+
+    runtime = info_dict['duration']
+
+    # If the movie is less than an hour, there will be no H in the string.
+    if 'H' in runtime:
+        hours, minutes = runtime.split('H')
+    else:
+        hours = 0
+        minutes = runtime
+
+    # If hours is a string, only keep the digits and transform to an int.
+    if hours:
+        hours = int(re.sub(r"\D", "", hours))
+
+    # If minutes is a string, only keep the digits and transform to an int.
+    if minutes:
+        minutes = int(re.sub(r"\D", "", minutes))
+    else:
+        minutes = 0
+
+    minutes += hours*60
+    movie.append(minutes)
 
 
+    genres = info_dict['genre']
+    # If genres is a list of several items, join them in a string.
+    if isinstance(genres, list):
+        genres = ";".join(genre for genre in genres)
+    movie.append(genres)
+
+
+    directors = info_dict['director']
+    # If directors is a list, join the items in a string.
+    if not isinstance(directors, dict):
+        directors_list = []
+        for director in directors:
+            if director['@type'] == 'Person':
+                # Don't add the director if they're already in the list.
+                if director['name'] not in directors_list:
+                    directors_list.append(director['name'])
+        directors_list = ";".join(director for director in directors_list)
+        movie.append(directors_list)
+    else:
+        movie.append(directors['name'])
+
+
+    writers = info_dict['creator']
+    # If writers is a list, join the items in a string.
+    if not isinstance(writers, dict):
+        writers_list = []
+        for writer in writers:
+            if writer['@type'] == 'Person':
+                # Don't add the writer if they're already in the list.
+                if writer['name'] not in writers_list:
+                    writers_list.append(writer['name'])
+        writers_list = ";".join(writer for writer in writers_list)
+        movie.append(writers_list)
+    else:
+        movie.append(writers['name'])
+
+
+    actors = info_dict['actor']
+    # If actors is a list, join the items in a string.
+    if not isinstance(actors, dict):
+        actors_list = []
+        for actor in actors:
+            if len(actors_list) == 3:
+                break
+            if actor['@type'] == 'Person':
+                # Don't add the actor if they're already in the list.
+                if actor['name'] not in actors_list:
+                    actors_list.append(actor['name'])
+        actors_list = ";".join(actor for actor in actors_list)
+        movie.append(actors_list)
+    else:
+        movie.append(actors['name'])
+
+
+    ratings_dict = info_dict['aggregateRating']
+    rating_value = ratings_dict['ratingValue']
+    rating_count = ratings_dict['ratingCount']
+
+    movie.append(rating_value)
+    movie.append(rating_count)
 
 
     print(movie)
-    # YOUR SCRAPING CODE GOES HERE:
-    # Return everything of interest for this movie (all strings as specified
-    # in the docstring of this function).
-    return
+    return movie
 
 
 if __name__ == '__main__':
