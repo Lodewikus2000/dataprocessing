@@ -1,136 +1,152 @@
 # Name: Leo Schreuders
 # Student number: 5742978
 
-import csv
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import json
 from scipy import stats
 
-INPUT_CSV = "input.csv"
-OUTPUT_CSV = "cleaned.csv"
-OUTPUT_JSON = "data.csv"
-NR_OF_BINS = 40
-KEYS = [
-    "Country", "Region", "Pop. Density (per sq. mi.)",
-    "Infant mortality (per 1000 births)", "GDP ($ per capita) dollars"
-    ]
-
-data = []
-
-# Read INPUT_CSV, clean up the data, replace missing or unknown values
-# with np.nan.
-with open(INPUT_CSV, "r", newline="\n") as infile:
-    reader = csv.DictReader(infile)
-    for row in reader:
-        for key, value in row.items():
-            value = value.replace(",",".").replace("dollars","").strip(" ")
-            if (len(value) == 0) or (value == "unknown"):
-                value = np.nan
-            row[key] = value
-        data.append(row)
+INPUT_CSV = 'input.csv'
+OUTPUT_CSV = 'cleaned.csv'
+OUTPUT_JSON = 'data.csv'
+NR_OF_BINS = 20
+KEYS = ['Country',
+        'Region',
+        'Pop. Density (per sq. mi.)',
+        'Infant mortality (per 1000 births)',
+        'GDP ($ per capita) dollars']
 
 
-# Output cleaner csv.
-with open(OUTPUT_CSV, "w", newline="") as outfile:
-    writer = csv.DictWriter(outfile, fieldnames=KEYS, extrasaction="ignore")
-    writer.writeheader()
-    for row in data:
-        writer.writerow(row)
+def format_string(string):
+    """
+    Takes a string, replaces commas with periods, and removes 'dollars', and
+    strips spaces. Returns the new string.
+    """
+    if isinstance(string, str):
+        string = string.replace(',', '.').replace('dollars', '').strip(' ')
+    return string
 
 
-# Make list of countries to use as main index for the dataframe.
-index = [row["Country"] for row in data]
+def clean(value):
+    """
+    Turns a string into NaN if's empty or 'unknown'. Returns the new value.
+    """
+    if isinstance(value, str):
+        if (not value) or (value == 'unknown'):
+            value = np.nan
+    return value
 
 
+def print_stats(dataframe, column_name):
+    """
+    Print the mean, median, mode and standard deviation of a column in a
+    panda dataframe. Returns nothing.
+    """
+    mean = dataframe[column_name].mean()
+    median = dataframe[column_name].median()
+    mode = dataframe[column_name].mode()
+    std = dataframe[column_name].std()
+
+    print(f'--------------------------------------')
+    print(f'{column_name}')
+    print(f'mean: {mean:.2f}')
+    print(f'median: {median:.2f}')
+    print(f'mode: {mode[0]:.2f}')
+    print(f'standard deviation: {std:.2f}')
+    print(f'--------------------------------------')
 
 
+def print_five(dataframe, column_name):
+    """
+    Print the five number summary of a specified column in a panda dataframe.
+    Returns nothing.
+    """
+    minimum = dataframe[column_name].min()
+    q1 = dataframe[column_name].quantile(0.25)
+    median = dataframe[column_name].median()
+    q3 = dataframe[column_name].quantile(0.75)
+    maximum = dataframe[column_name].max()
 
-# Turn the data into a dataframe.
-dataframe = pd.DataFrame(data, index=index)
-dataframe = dataframe.drop(columns="Country")
-
-
-length_before = len(dataframe.index)
-
-
-# Drop all unnecessary columns.
-for column in dataframe:
-    if column not in KEYS:
-        dataframe.drop(column, axis=1, inplace=True)
-
-
-# Turn data into actual numbers.
-for key in [
-    "Pop. Density (per sq. mi.)", "Infant mortality (per 1000 births)",
-    "GDP ($ per capita) dollars"
-    ]:
-    dataframe[key] = pd.to_numeric(dataframe[key])
+    print(f'--------------------------------------')
+    print(f'{column_name}')
+    print(f'minimum: {minimum:.2f}')
+    print(f'first quartile: {q1:.2f}')
+    print(f'median: {median:.2f}')
+    print(f'third quartile: {q3:.2f}')
+    print(f'maximum: {maximum:.2f}')
+    print(f'--------------------------------------')
 
 
-dataframe.dropna(inplace=True)
+if __name__ == '__main__':
 
-# z = np.abs(stats.zscore(dataframe["GDP ($ per capita) dollars"]))
-# print(z)
+    df = pd.read_csv(INPUT_CSV)
+    df.set_index('Country', inplace=True)
 
-# dataframe = dataframe[(np.abs(stats.zscore(dataframe["GDP ($ per capita) dollars"])) < 3)]
+    # Drop columns we're not interested in.
+    for column in df:
+        if column not in KEYS:
+            df.drop(column, axis=1, inplace=True)
 
-dataframe = dataframe[(np.abs(stats.zscore(dataframe.select_dtypes(exclude='object'))) < 3).all(axis=1)]
+    # Reformat the string values.
+    for column in ['Region',
+                   'Pop. Density (per sq. mi.)',
+                   'Infant mortality (per 1000 births)',
+                   'GDP ($ per capita) dollars']:
+        df[column] = df[column].map(format_string)
 
+    # Turn unknown or empty values in to NaN.
+    df = df.applymap(clean)
 
-length_after = len(dataframe.index)
-
-# dataframe.drop("Suriname", axis=0, inplace=True)
-
-print(f"--------------------------------------")
-print(f"{length_before - length_after} rows with missing values or outliers were dropped.")
-
-
-mean = dataframe["GDP ($ per capita) dollars"].mean()
-median = dataframe["GDP ($ per capita) dollars"].median()
-mode = dataframe["GDP ($ per capita) dollars"].mode()
-std = dataframe["GDP ($ per capita) dollars"].std()
-
-print(f"--------------------------------------")
-print(f"GDP ($ per capita) dollars")
-print(f"mean: {mean:.2f}")
-print(f"median: {median:.2f}")
-print(f"mode: {mode[0]:.2f}")
-print(f"standard deviation: {std:.2f}")
-
-# Save and show histogram.
-fig, ax = plt.subplots()
-dataframe["GDP ($ per capita) dollars"].plot.hist(bins=NR_OF_BINS,
-    title="GDP ($ per capita) dollars")
-ax.set_xlabel("dollars")
-plt.grid(b=True, axis="y")
-plt.savefig("GDP.png")
-plt.show()
-
-minimum = dataframe["Infant mortality (per 1000 births)"].min()
-q1 = dataframe["Infant mortality (per 1000 births)"].quantile(0.25)
-median = dataframe["Infant mortality (per 1000 births)"].median()
-q3 = dataframe["Infant mortality (per 1000 births)"].quantile(0.75)
-maximum = dataframe["Infant mortality (per 1000 births)"].max()
-
-print(f"--------------------------------------")
-print(f"Infant mortality (per 1000 births)")
-print(f"minimum: {minimum:.2f}")
-print(f"first quartile: {q1:.2f}")
-print(f"median: {median:.2f}")
-print(f"third quartile: {q3:.2f}")
-print(f"maximum: {maximum:.2f}")
-print(f"--------------------------------------")
-
-dataframe["Infant mortality (per 1000 births)"].plot.box()
-plt.grid(b=True, axis="y")
-plt.savefig("Infant_mortality.png")
-plt.show()
+    # Turn strings of numbers into actual numbers.
+    for column in ['Pop. Density (per sq. mi.)',
+                   'Infant mortality (per 1000 births)',
+                   'GDP ($ per capita) dollars']:
+        df[column] = pd.to_numeric(df[column])
 
 
+    length_before = len(df.index)
 
-json_data = dataframe.to_json(orient="index")
+    # Drop rows with missing values.
+    df.dropna(inplace=True)
 
-with open(OUTPUT_JSON, "w") as outfile:
-    outfile.write(json_data)
+    length_after = len(df.index)
+
+    # Remove rows with outliers using z-scores. Only consider numerical values.
+    df = df[(np.abs(stats.zscore(df.select_dtypes(exclude='object'))) < 3).all(axis=1)]
+
+
+    print(f'--------------------------------------')
+    print(f'{length_before - length_after} rows with missing values or outliers'
+          ' were dropped.')
+
+
+    print_stats(df, 'GDP ($ per capita) dollars')
+
+    # Save and show histogram.
+    fig, ax = plt.subplots()
+    df['GDP ($ per capita) dollars'].plot.hist(bins=NR_OF_BINS,
+                                               title='GDP ($ per capita) '
+                                                     'dollars')
+    ax.set_xlabel('dollars')
+    ax.set_ylabel('frequency')
+    ax.set_title('GDP')
+    plt.grid(b=True, axis='y')
+    plt.savefig('GDP.png')
+    plt.show()
+
+    print_five(df, 'Infant mortality (per 1000 births)')
+
+    # Save and show boxplot.
+    fig, ax = plt.subplots()
+    df['Infant mortality (per 1000 births)'].plot.box()
+    ax.set_title('Infant mortality')
+    ax.set_xticklabels([])
+    ax.set_ylabel('infant mortality per 1000 births')
+    plt.grid(b=True, axis='y')
+    plt.savefig('Infant_mortality.png')
+    plt.show()
+
+
+    json_data = df.to_json(orient='index')
+    with open(OUTPUT_JSON, 'w') as outfile:
+        outfile.write(json_data)
