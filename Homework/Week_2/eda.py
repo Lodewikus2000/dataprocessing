@@ -4,11 +4,10 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import stats
 
 INPUT_CSV = 'input.csv'
 OUTPUT_CSV = 'cleaned.csv'
-OUTPUT_JSON = 'data.csv'
+OUTPUT_JSON = 'data.json'
 NR_OF_BINS = 20
 KEYS = ['Country',
         'Region',
@@ -80,7 +79,6 @@ def print_five(dataframe, column_name):
 if __name__ == '__main__':
 
     df = pd.read_csv(INPUT_CSV)
-    df.set_index('Country', inplace=True)
 
     # Drop columns we're not interested in.
     for column in df:
@@ -88,11 +86,15 @@ if __name__ == '__main__':
             df.drop(column, axis=1, inplace=True)
 
     # Reformat the string values.
-    for column in ['Region',
+    for column in ['Country',
+                   'Region',
                    'Pop. Density (per sq. mi.)',
                    'Infant mortality (per 1000 births)',
                    'GDP ($ per capita) dollars']:
         df[column] = df[column].map(format_string)
+
+    # Make the Country column the index column.
+    df.set_index('Country', inplace=True)
 
     # Turn unknown or empty values in to NaN.
     df = df.applymap(clean)
@@ -104,15 +106,18 @@ if __name__ == '__main__':
         df[column] = pd.to_numeric(df[column])
 
 
+
     length_before = len(df.index)
+    print(df)
 
     # Drop rows with missing values.
     df.dropna(inplace=True)
 
     length_after = len(df.index)
 
-    # Remove rows with outliers using z-scores. Only consider numerical values.
-    df = df[(np.abs(stats.zscore(df.select_dtypes(exclude='object'))) < 3).all(axis=1)]
+
+    # Surinam's GDP seems incorrect, we will drop the value.
+    df.drop('Suriname', inplace=True)
 
 
     print(f'--------------------------------------')
@@ -141,7 +146,7 @@ if __name__ == '__main__':
     df['Infant mortality (per 1000 births)'].plot.box()
     ax.set_title('Infant mortality')
     ax.set_xticklabels([])
-    ax.set_ylabel('infant mortality per 1000 births')
+    ax.set_ylabel('mortality per 1000 births')
     plt.grid(b=True, axis='y')
     plt.savefig('Infant_mortality.png')
     plt.show()
