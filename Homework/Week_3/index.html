@@ -1,0 +1,52 @@
+<!--
+Leo Schreuders
+student ID 5742978
+purpose of this document
+-->
+
+
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <title>Leo's page</title>
+</head>
+<body>
+
+
+  <script>
+    console.log("Hello world!");
+    var fileName = "data.json";
+    var txtFile = new XMLHttpRequest();
+
+    txtFile.onreadystatechange = function() {
+        if (txtFile.readyState === 4 && txtFile.status == 200) {
+            var data = JSON.parse(txtFile.responseText);
+            myFunction(data);
+        }
+    }
+
+    txtFile.open("GET", fileName);
+    txtFile.send();
+
+    function myFunction(json) {
+      console.log(Object.keys(json));
+
+      Object.keys(json).forEach(function(element) {
+        console.log(json[element]["Werkloosheidspercentage/Niet seizoengecorrigeerd (%)"]);
+      });
+    }
+  </script>
+
+
+  <canvas>
+  </canvas>
+
+
+
+
+</body>
+
+</html>
