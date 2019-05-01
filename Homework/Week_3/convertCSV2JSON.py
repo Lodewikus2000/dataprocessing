@@ -1,15 +1,11 @@
 # Name: Leo Schreuders
 # Student number: 5742978
 
-
 import pandas as pd
-
-
 
 INPUT_CSV = 'arbeidsdeelname_per_maand.csv'
 OUTPUT_JSON = 'data.json'
 INDEX_NAME = 'Perioden'
-
 
 
 if __name__ == '__main__':
