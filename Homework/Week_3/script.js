@@ -10,6 +10,7 @@ txtFile.onreadystatechange = function() {
     }
 }
 
+
 txtFile.open("GET", fileName);
 txtFile.send();
 
