@@ -52,7 +52,7 @@ function drawGraph(json) {
 
     // Set the labels.
     ctx.font = '16px sans-serif';
-    ctx.fillText("year", (GRAPH_WIDTH / 2) + 20, CANVAS_HEIGHT - 10);
+    ctx.fillText("year", (GRAPH_WIDTH / 2) + 20, CANVAS_HEIGHT - 20);
     ctx.translate(0, 0);
     ctx.rotate(- Math.PI / 2);
     ctx.fillText("unemployment %", -(GRAPH_HEIGHT / 2) - 100, 26);
@@ -60,7 +60,9 @@ function drawGraph(json) {
 
     // Set the title.
     ctx.font = '24px sans-serif';
-    ctx.fillText("Unemployment in the Netherlands", CANVAS_WIDTH / 2 - 200, 34);
+    ctx.fillText("Unemployment in the Netherlands", CANVAS_WIDTH / 2 - 200, 24);
+    ctx.font = '12px sans-serif';
+    ctx.fillText("Not corrected for seasonal effects", CANVAS_WIDTH / 2 - 100, 44);
 
     // Source.
     ctx.font = '10px sans-serif';
