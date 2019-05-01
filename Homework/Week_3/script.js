@@ -10,7 +10,6 @@ txtFile.onreadystatechange = function() {
     }
 }
 
-
 txtFile.open("GET", fileName);
 txtFile.send();
 
@@ -43,7 +42,6 @@ function drawGraph(json) {
 
     xTrans = createTransform([0, KEYS.length], [GRAPH_LEFT, GRAPH_RIGHT]);
     yTrans = createTransform([0, LARGEST_VALUE], [GRAPH_BOTTOM, GRAPH_TOP]);
-
 
     drawAxes(ctx, GRAPH_LEFT, GRAPH_RIGHT, GRAPH_BOTTOM, GRAPH_TOP);
 
