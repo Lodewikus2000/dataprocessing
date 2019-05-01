@@ -25,6 +25,11 @@ function myFunction(json) {
 
     const canvas = document.getElementById("graph");
     const ctx = canvas.getContext("2d");
+
+    // We need the default state of the canvas to keep drawing after rotation.
+    ctx.save();
+
+
     var CANVAS_WIDTH = 900;
     var CANVAS_HEIGHT = 600;
 
@@ -137,6 +142,7 @@ function myFunction(json) {
     ctx.rotate(- Math.PI / 2);
     ctx.fillText("Unemployment %", -(GRAPH_HEIGHT / 2) - 80, 20);
     ctx.restore();
+    ctx.fillText();
 }
 
 
