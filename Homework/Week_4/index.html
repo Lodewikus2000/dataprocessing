@@ -6,12 +6,15 @@
   </head>
   <body>
     <script type="text/javascript">
-        d3.select("head").append("title").text("Renewable energy!");
-        d3.select("body").append("h1").text("Renewable energy!");
-        d3.select("body").append("p").text("Leo Schreuders");
+        d3.select("head").append("title").text("Renewable energy");
+        d3.select("body").append("h1").text("Renewable energy");
+        d3.select("body").append("p").text("Bar chart made by Leo Schreuders for the course Data Processing at the University of Amsterdam");
         d3.select("body").append("p").text("student ID 5742978");
-        d3.select("body").append("p").text("This is a beautiful dataset that I don't know what it is about :(").style("color","#FF0000");
-        d3.select("body").append("p").text("source: https://data.oecd.org/energy/renewable-energy.htm").style("color","#FF0000");
+        d3.select("body").append("p").text("The bar chart shows the amount of renewable energy a country produces in a given year. It is measured in kilo tonne of oil equivalent (ktoe).");
+        d3.select("body").append("a").text("Data source").style("color","#FF0000").attr("href", "https://data.oecd.org/energy/renewable-energy.htm");
+
+
+        // The drop down list for the years.
         d3.select("body").append("select").attr("id", "year");
         var w = 800;
         var h = 400;
@@ -24,13 +27,12 @@
 
 
         var tooltip = d3.select("body").append("div").attr("class", "toolTip");
-
         tooltip
             .style("position", "absolute")
             .style("display", "none")
             .style("min-width", "80px")
             .style("height", "auto")
-            .style("background", "none repeat scroll 0 0 #ffffff")
+            .style("background", "none repeat scroll 0 0 #aaaaaa")
             .style("border", "1px solid #6F257F")
             .style("padding", "14px")
             .style("text-align", "center");
@@ -39,13 +41,17 @@
         d3.json("data.json").then(d => chart(d));
 
 
-        function chart(data)  {
 
-// mostly from here: https://bl.ocks.org/LemoNode/73dbb9d6a144476565386f48a2df2e3b
+
+
+
+        function chart(data)  {
+            // This is the function that draws the actual bar chart.
+            // Based on: https://bl.ocks.org/LemoNode/73dbb9d6a144476565386f48a2df2e3b
+
+
             var countries = [...new Set(data.map(d => d.LOCATION))];
             var years  = [...new Set(data.map(d => d.TIME))];
-            console.log(years);
-            console.log(countries);
 
             var options = d3.select("#year").selectAll("option")
         		.data(years)
@@ -60,14 +66,6 @@
             width = w - margin.left - margin.right;
             height = h - margin.top - margin.bottom;
             console.log(data);
-
-            // var maxValue = -1;
-            // for (var d in Object.values(data)) {
-            //     if (data[d].Value > maxValue) {
-            //         maxValue = data[d].Value;
-            //     }
-            // };
-            // console.log(maxValue);
 
 
 
@@ -98,6 +96,7 @@
                 .attr("transform", "translate(" + margin.left + "," + (margin.top + height + 4) + ")")
                 .call(d3.axisBottom(x).tickSizeOuter(0))
                 .selectAll("text")
+                .attr("class", "xLabel")
                 .style("text-anchor", "end")
                 .attr("dx", "-1em")
                 .attr("dy", - barWidth / 4 + "px")
@@ -106,25 +105,20 @@
 
 
             update(d3.select("#year").property("value") ,0)
-            // I don't know why, but my tooltip doesn't work the very first time the graph loads.
-            update(d3.select("#year").property("value") ,0)
 
-            // in this function we update and draw the graph
+
+
             function update(year, speed) {
-                // hier filteren we op het juiste jaar
+                // This function updates the bar chart.
                 var yearData = data.filter(d => d.TIME == year)
 
-                console.log(yearData);
                 var maxValue = d3.max(yearData, d => d.Value)
 
 
-                y.domain([0, maxValue]).nice();
+                y.domain([0, maxValue]);
 
                 svg.selectAll(".y-axis").transition().duration(speed)
         			.call(yAxis);
-
-
-
 
                 var bar = svg.selectAll(".bar").data(yearData)
 
@@ -137,15 +131,36 @@
                 .merge(bar)
                 .transition().duration(speed)
                 .attr("height", function(d) {
+                        if (d.Value == null) {
+                            return height - y(0);
+                        };
                         return height - y(d.Value);
                       })
                 .attr("x", function(d, i) {
                         return i * (width / yearData.length) + margin.left;
                       })
                 .attr("y", function(d) {
+                        if (d.Value == null) {
+                            return margin.top + y(0);
+                        };
                         return margin.top + y(d.Value); //Height minus data value
                     });
 
+                tooltipLoad(year);
+
+            };
+
+
+
+
+
+            chart.update = update;
+
+
+
+            function tooltipLoad(year) {
+                var yearData = data.filter(d => d.TIME == year)
+                var bar = svg.selectAll(".bar").data(yearData)
                 bar.on("mousemove", function(d){
                         tooltip
                           .style("left", (d3.event.pageX - 50) + "px")
@@ -154,35 +169,32 @@
                           .html(d.LOCATION + "<br>" + "Renewable energy:" + "<br>" + (d.Value) + " ktoe");
                     })
                 .on("mouseout", function(d){ tooltip.style("display", "none");});
-            };
 
-            chart.update = update;
+
+                var label = svg.selectAll(".xLabel").data(yearData)
+                label.on("mousemove", function(d){
+                        tooltip
+                          .style("left", (d3.event.pageX - 50) + "px")
+                          .style("top", (d3.event.pageY - 100) + "px")
+                          .style("display", "inline-block");
+                              if (d.Value == null) {
+                                  tooltip.html(d.LOCATION + "<br>" + "No data");
+                              } else {
+                                  tooltip.html(d.LOCATION + "<br>" + "Renewable energy:" + "<br>" + (d.Value) + " ktoe");
+                              };
+
+                          })
+                .on("mouseout", function(d){ tooltip.style("display", "none");});
+
+            };
         }
 
+        // This calls the update function of the bar chart whenever a new year is selected.
         var select = d3.select("#year")
         	.style("border-radius", "5px")
         	.on("change", function() {
         		chart.update(this.value, 750)
         	})
-
-              console.log(svg.selectAll("text"))
-
-
-                 // I think we don't do this anymore?
-            // var labels = svg.selectAll(".test").data(data).enter().append("text").attr('class', 'test');
-            // labels.text(function(d) {
-            //           return Math.round(d.Value / 1000);
-            //         })
-            //         .attr("x", function(d, i) {
-            //           return i * (width / data.length) + margin.left;
-            //         })
-            //         .attr("y", function(d) {
-            //           return margin.top + scale(d.Value); //Height minus data value
-            //       });
-
-
-
-
 
     </script>
 
