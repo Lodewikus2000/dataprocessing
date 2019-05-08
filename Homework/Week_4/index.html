@@ -16,7 +16,7 @@
 
         var w = 900;
         var h = 600;
-        var barPadding = 1;
+
 
         var svg = d3.select(".container").append("div")
             .append("svg")
@@ -36,7 +36,9 @@
             .style("height", "auto")
             .style("background", "none repeat scroll 0 0 #ffffff")
             .style("border", "2px solid #00995c")
-            .style("padding", "12px")
+            .style("padding", "10px")
+            .style("font-family", "sans-serif")
+            .style("font-size", "12px")
             .style("text-align", "center");
 
 
@@ -68,8 +70,6 @@
                 .text(d => d);
 
 
-            var offset = 4;
-
             var margin = {
                 left: 50,
                 right: 20,
@@ -80,8 +80,6 @@
             width = w - margin.left - margin.right;
             height = h - margin.top - margin.bottom;
 
-            var barWidth = width / countries.length - barPadding;
-
 
             // Set a scale for the y-axis.
             var y = d3.scaleLinear();
@@ -90,7 +88,7 @@
 
             // Set a funcion for the y-axis.
             var yAxis = g => g
-                .attr("transform", "translate(" + (margin.left - offset) + "," + margin.top + ")")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
                 .call(d3.axisLeft(y))
 
 
@@ -103,18 +101,19 @@
             var x = d3.scaleBand()
                 .domain(countries)
                 .range([0, width])
-                .padding(0.01);
+                .padding(0.1)
+                .paddingOuter(0.2)
 
 
-            // Add the x-axis.
+            // Add the x-axis and labels.
             svg.append("g")
-                .attr("transform", "translate(" + margin.left + "," + (margin.top + height + 4) + ")")
+                .attr("transform", "translate(" + margin.left + "," + (margin.top + height) + ")")
                 .call(d3.axisBottom(x).tickSizeOuter(0))
                 .selectAll("text")
                 .attr("class", "xLabel")
                 .style("text-anchor", "end")
                 .attr("dx", "-1em")
-                .attr("dy", -barWidth / 4 + "px")
+                .attr("dy", - x.bandwidth() / 4 + "px")
                 .attr("transform", "rotate(-90)");
 
 
@@ -137,7 +136,8 @@
                 var maxValue = d3.max(yearData, d => d.Value);
 
                 // Set the domain given the year.
-                y.domain([0, maxValue]);
+                var scaleFactor = 1.05
+                y.domain([0, maxValue * scaleFactor]);
 
                 svg.selectAll(".y-axis").transition().duration(speed)
                     .call(yAxis);
@@ -149,7 +149,7 @@
                 bar.enter().append("rect")
                     .attr("class", "bar")
                     .attr("fill", "#00e68a")
-                    .attr("width", barWidth)
+                    .attr("width", x.bandwidth())
                     .merge(bar)
                     .transition().duration(speed)
                     .attr("height", function(d) {
@@ -159,7 +159,7 @@
                         return height - y(d.Value);
                     })
                     .attr("x", function(d, i) {
-                        return i * (width / yearData.length) + margin.left;
+                        return x(d.LOCATION) + margin.left;
                     })
                     .attr("y", function(d) {
                         if (d.Value == null) {
