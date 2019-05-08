@@ -168,7 +168,7 @@
                         return margin.top + y(d.Value);
                     });
 
-                tooltipDisplay(year);
+                mouseOver(year);
 
             };
 
@@ -176,7 +176,7 @@
             chart.update = update;
 
 
-            function tooltipDisplay(year) {
+            function mouseOver(year) {
                 var yearData = data.filter(d => d.TIME == year)
 
                 // Show the tooltip when the user mouses over the bars.
