@@ -47,7 +47,7 @@ d3.json("data.json").then(d => chart(d));
 
 function chart(data) {
 
-
+  console.log(data);
     // This is the function that draws the actual bar chart.
     // Based on https://bl.ocks.org/LemoNode/73dbb9d6a144476565386f48a2df2e3b
 
