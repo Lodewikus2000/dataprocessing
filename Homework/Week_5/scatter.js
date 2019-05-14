@@ -87,39 +87,43 @@ function scatter(dataset, years, countries) {
       .enter().append("option")
       .text(d => d);
 
-  // scale for the y axis
-  var y = d3.scaleLinear()
-      .range([height, 0]);
-
-  // set a function for the y axis:
-  var yAxis = g => g
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-      .call(d3.axisLeft(y))
-
-  // Add an element to the svg for the y-axis.
-  svg.append("g")
-      .attr("class", "y-axis")
-
 
   // Set the x-axis.
   var x = d3.scaleLinear()
       .range([0, width]);
-
-
-
   // set a function for the x axis:
   var xAxis = g => g
       .attr("transform", "translate(" + margin.left + "," + (margin.top + height) + ")")
       .call(d3.axisBottom(x))
-
   // Add an element to the svg for the x-axis.
   svg.append("g")
       .attr("class", "x-axis")
 
 
+  // scale for the y axis
+  var y = d3.scaleLinear()
+      .range([height, 0]);
+  // set a function for the y axis:
+  var yAxis = g => g
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+      .call(d3.axisLeft(y))
+  // Add an element to the svg for the y-axis.
+  svg.append("g")
+      .attr("class", "y-axis");
+
+
+  // scale for the color
+  var c = d3.scaleLinear()
+      .range(["deepskyblue", "gold"]);
+
+
+
   var maxRadius = 40;
-  var z = d3.scaleLinear()
+  // scale for the radius
+  var r = d3.scaleLinear()
       .range([4, maxRadius]);
+
+
 
   var tooltip = d3.select("body").append("div").attr("class", "tooltip");
   tooltip.style("position", "absolute")
@@ -148,7 +152,14 @@ update(d3.select("#yearSelect").property("value"))
 
     var maxX = d3.max(yearData, d => d.Datapoint[0]);
     var maxY = d3.max(yearData, d => d.Datapoint[1]);
-    var maxZ = d3.max(yearData, d => d.Datapoint[2]);
+    var maxC = d3.max(yearData, d => d.Datapoint[2]);
+    var maxR = d3.max(yearData, d => d.Datapoint[3]);
+
+    var minX = d3.min(yearData, d => d.Datapoint[0]);
+    var minY = d3.min(yearData, d => d.Datapoint[1]);
+    var minC = d3.min(yearData, d => d.Datapoint[2]);
+    var minR = d3.min(yearData, d => d.Datapoint[3]);
+
 
     if (!maxX) {
         maxX = 0;
@@ -156,19 +167,39 @@ update(d3.select("#yearSelect").property("value"))
     if (!maxY) {
         maxY = 0;
     }
-    if (!maxZ) {
-        maxZ = 0;
+    if (!maxC) {
+        maxC = 0;
+    }
+    if (!maxR) {
+        maxR = 0;
+    }
+
+    if (!minX) {
+        minX = 0;
+    }
+    if (!minY) {
+        minY = 0;
+    }
+    if (!minC) {
+        minC = 0;
+    }
+    if (!minR) {
+        minR = 0;
     }
 
 
-    console.log("max x en y");
+    console.log("max x en y en c en r");
     console.log(maxX);
     console.log(maxY);
+    console.log(maxC);
+    console.log(maxR);
 
+    // the scalefactor makes the plot slightly bigger than the max values
     var scaleFactor = 1.05
     x.domain([0, maxX * scaleFactor]);
     y.domain([0, maxY * scaleFactor]);
-    z.domain([0, maxZ]);
+    c.domain([minC, maxC]);
+    r.domain([minR, maxR]);
 
 
     svg.selectAll(".y-axis").transition(t).call(yAxis);
@@ -189,11 +220,18 @@ update(d3.select("#yearSelect").property("value"))
       return margin.top + y(d.Datapoint[1]);
     }
 
-    var zFunction = function(d) {
+    var cFunction = function(d) {
       if (d.Datapoint[2] == null) {
-          return z(0);
+          return "grey";
       };
-      return z(d.Datapoint[2]);
+      return c(d.Datapoint[2]);
+    }
+
+    var rFunction = function(d) {
+      if (d.Datapoint[3] == null) {
+          return r(0);
+      };
+      return r(d.Datapoint[3]);
     }
 
 
@@ -208,7 +246,6 @@ update(d3.select("#yearSelect").property("value"))
 
     circle.enter().append("circle")
         .attr("class", "circle")
-        .attr("fill", "#00e68a")
         .merge(circle)
         .transition(t)
         .attr("cx", function(d) {
@@ -217,8 +254,11 @@ update(d3.select("#yearSelect").property("value"))
         .attr("cy", function(d) {
           return yFunction(d)
         })
+        .attr("fill", function(d) {
+          return cFunction(d)
+        })
         .attr("r", function(d) {
-          return zFunction(d)
+          return rFunction(d)
         });
 
 
@@ -238,15 +278,20 @@ update(d3.select("#yearSelect").property("value"))
                   tooltip.style("left", (d3.event.pageX - 50) + "px")
                       .style("top", (d3.event.pageY - 200) + "px")
                       .style("display", "inline-block")
-                      .html(d.Country + "<br>" + "Teens in violent areas:<br>" + (d.Datapoint[0]) + "<br>Teen pregnancy rate:<br>" + (d.Datapoint[1]) + "<br>share of 1 percent:<br>" + (d.Datapoint[2]));
-                  d3.select(this).attr("fill", "#ff471a").attr("r", function(d) {
-                    return zFunction(d) * 2;
+                      .html(d.Country + "<br>" + "Teens in violent areas:<br>" + (d.Datapoint[0]) + "<br>Teen pregnancy rate:<br>" + (d.Datapoint[1]) + "<br>share of 1 percent:<br>" + (d.Datapoint[2]) + "<br>GDP:<br>" + (d.Datapoint[3]) );
+                  d3.select(this).attr("fill", "purple").attr("r", function(d) {
+                    return rFunction(d) * 2;
                   });
               })
               .on("mouseout", function(d) {
                   tooltip.style("display", "none");
-                  d3.select(this).transition(t).attr("fill", "#00e68a").attr("r", function(d) {
-                    return zFunction(d)
+                  d3.select(this)
+                  .transition(t)
+                  .attr("fill", function(d) {
+                    return cFunction(d)
+                  })
+                  .attr("r", function(d) {
+                    return rFunction(d)
                   });
               });
         };
