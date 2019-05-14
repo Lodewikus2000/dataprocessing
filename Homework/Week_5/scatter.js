@@ -117,11 +117,11 @@ function scatter(dataset, years, countries) {
       .range(["deepskyblue", "gold"]);
 
 
-
+  var minRadius = 8;
   var maxRadius = 40;
   // scale for the radius
   var r = d3.scaleLinear()
-      .range([4, maxRadius]);
+      .range([minRadius, maxRadius]);
 
 
 
@@ -168,10 +168,10 @@ update(d3.select("#yearSelect").property("value"))
         maxY = 0;
     }
     if (!maxC) {
-        maxC = 0;
+        maxC = 1;
     }
     if (!maxR) {
-        maxR = 0;
+        maxR = 1;
     }
 
     if (!minX) {
@@ -229,7 +229,7 @@ update(d3.select("#yearSelect").property("value"))
 
     var rFunction = function(d) {
       if (d.Datapoint[3] == null) {
-          return r(0);
+          return r(minR);
       };
       return r(d.Datapoint[3]);
     }
