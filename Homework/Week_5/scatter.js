@@ -56,6 +56,7 @@ window.onload = function() {
 
 function scatter(dataset, years, countries, labels) {
 
+
   var margin = {
       left: 40,
       right: 30,
@@ -67,6 +68,14 @@ function scatter(dataset, years, countries, labels) {
   var height = h - margin.top - margin.bottom;
 
   svg = d3.select("#main").attr("width", w).attr("height", h);
+
+  svg.append("text")
+        .attr("x", (width / 2))
+        .attr("y", (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text("GDP vs teenage birthrate and working hours");
 
 
   var yearOptions = d3.select("#yearSelect").selectAll("option")
@@ -469,7 +478,7 @@ function transformResponse(data) {
 
   // Save the data.
   let originalData = data;
-  console.log(originalData);
+
 
 
   let seriesBool = false;
