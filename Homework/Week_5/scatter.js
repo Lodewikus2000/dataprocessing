@@ -1,9 +1,8 @@
 var w = 900;
 var h = 600;
 
-const labels = ["GDP","Births per 1000 women aged 15-19", "% children (0-17) in violent areas", "% share of wealth of top 10%"]
+const labels = ["GDP ($)", "births per 1000 women aged 15-19", "annual hours worked", "children (aged 0-17) in violent areas (%)"];
 
-// Make sure these are reflected in line 33
 
 
 
@@ -11,32 +10,39 @@ const labels = ["GDP","Births per 1000 women aged 15-19", "% children (0-17) in 
 window.onload = function() {
 
 
-  var teensInViolentArea = "https://stats.oecd.org/SDMX-JSON/data/CWB/AUS+AUT+BEL+CAN+CHL+DNK+EST+FIN+FRA+DEU+GRC+HUN+IRL+ITA+JPN+KOR+LVA+LUX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+GBR+USA.CWB11/all?startTime=2010&endTime=2017"
+  var teensInViolentArea = "https://stats.oecd.org/SDMX-JSON/data/CWB/AUS+AUT+BEL+CAN+CHL+DNK+EST+FIN+FRA+DEU+GRC+HUN+IRL+ITA+JPN+KOR+LVA+LUX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+GBR+USA.CWB11/all?startTime=2009&endTime=2016"
   var teenPregnancies = "https://stats.oecd.org/SDMX-JSON/data/CWB/AUS+AUT+BEL+CAN+CHL+DNK+EST+FIN+FRA+DEU+GRC+HUN+IRL+ITA+JPN+KOR+LVA+LUX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+GBR+USA.CWB46/all?startTime=2009&endTime=2016"
-  var top1Share = "https://stats.oecd.org/SDMX-JSON/data/WEALTH/AUS+AUT+BEL+CAN+CHL+DNK+EST+FIN+FRA+DEU+GRC+HUN+IRL+ITA+JPN+KOR+LVA+LUX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+GBR+USA.ST10.TP/all?startTime=2009&endTime=2016"
-  var GDP = "https://stats.oecd.org/SDMX-JSON/data/SNA_TABLE1/AUS+AUT+BEL+CAN+CHL+DNK+EST+FIN+FRA+DEU+GRC+HUN+IRL+ITA+JPN+KOR+LVA+LUX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+GBR+USA.B1_GE.HCPC/all?startTime=2012&endTime=2018&dimensionAtObservation=allDimensions"
-  var socialSpending = "https://stats.oecd.org/SDMX-JSON/data/SOCX_AGG/AUS+AUT+BEL+CAN+CHL+DNK+EST+FIN+FRA+DEU+GRC+HUN+IRL+ITA+JPN+KOR+LVA+LUX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+GBR+USA./all?startTime=2009&endTime=2016"
+  var GDP = "https://stats.oecd.org/SDMX-JSON/data/SNA_TABLE1/AUS+AUT+BEL+CAN+CHL+DNK+EST+FIN+FRA+DEU+GRC+HUN+IRL+ITA+JPN+KOR+LVA+LUX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+GBR+USA.B1_GE.HCPC/all?startTime=2009&endTime=2016&dimensionAtObservation=allDimensions"
+  var hoursWorked = "https://stats.oecd.org/SDMX-JSON/data/ANHRS/AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+OECD+CRI+RUS.TE.A/all?startTime=2009&endTime=2016&dimensionAtObservation=allDimensions&pid=7fbec742-4ead-42fd-b08e-42905657c4b6"
 
-  var requests = [d3.json(teensInViolentArea), d3.json(teenPregnancies), d3.json(top1Share), d3.json(GDP)];
+
+  var requests = [d3.json(teensInViolentArea), d3.json(teenPregnancies), d3.json(GDP), d3.json(hoursWorked)];
 
   Promise.all(requests).then(function(response) {
 
       var teensInViolenceBetter = transformResponse(response[0]);
       var teenPregBetter = transformResponse(response[1]);
-      var top10Better = transformResponse(response[2]);
-      var GDPBetter = transformResponse(response[3]);
+      var GDPBetter = transformResponse(response[2]);
+      var hoursWorkedBetter = transformResponse(response[3]);
 
-      // the order is [x, y, radius]
-      var results = mergeData([GDPBetter, teenPregBetter, teensInViolenceBetter, top10Better]);
+      // index 0 will be x-axis, index 4 will be radius
+      var results = mergeData([GDPBetter, teenPregBetter, hoursWorkedBetter, teensInViolenceBetter]);
+
 
       scatter(results[0], results[1], results[2], labels);
-      console.log(d3.select("#yearSelect").property("value"));
-      scatter.update(d3.select("#yearSelect").property("value"));
 
-      var select = d3.select("#yearSelect")
+      scatter.update(d3.select("#yearSelect").property("value"), d3.select("#yVarSelect").property("value"));
+
+      var yearSelect = d3.select("#yearSelect")
       .style("border-radius", "5px")
       .on("change", function() {
-          scatter.update(this.value)
+          scatter.update(this.value, d3.select("#yVarSelect").property("value"));
+      });
+
+      var yVarSelect = d3.select("#yVarSelect")
+      .style("border-radius", "5px")
+      .on("change", function() {
+          scatter.update(d3.select("#yearSelect").property("value"), this.value);
       });
 
 
@@ -57,8 +63,10 @@ function scatter(dataset, years, countries, labels) {
 
 
 
+
+
   var margin = {
-      left: 50,
+      left: 80,
       right: 30,
       top: 30,
       bottom: 40
@@ -71,8 +79,13 @@ function scatter(dataset, years, countries, labels) {
 
 
 
-  var options = d3.select("#yearSelect").selectAll("option")
+  var yearOptions = d3.select("#yearSelect").selectAll("option")
       .data(years.reverse())
+      .enter().append("option")
+      .text(d => d);
+
+  var yOptions = d3.select("#yVarSelect").selectAll("option")
+      .data(labels.slice(1,3))
       .enter().append("option")
       .text(d => d);
 
@@ -100,46 +113,11 @@ function scatter(dataset, years, countries, labels) {
   svg.append("g")
       .attr("class", "y-axis");
 
-console.log(countries);
-console.log(countries.length);
-  var colScale = d3.scaleOrdinal()
-    .domain(countries)
-    .range(["#c75d27",
-"#616ddb",
-"#59c142",
-"#a654c9",
-"#89ba3d",
-"#d63d8a",
-"#55c974",
-"#d380d2",
-"#41922e",
-"#8457a1",
-"#b2b72d",
-"#6b86c9",
-"#d89c33",
-"#4ab3d2",
-"#d64243",
-"#56c4a5",
-"#a14a77",
-"#369657",
-"#e3829e",
-"#6d8c2e",
-"#ad4f50",
-"#83b26f",
-"#df936b",
-"#367e5c",
-"#92692d",
-"#5c7237",
-"#b5ae5e",
-"#6a701d"]);
+
   // scale for the color
   var c = d3.scaleLinear()
-      .range(["deepskyblue", "gold"]);
+    .range(["#fee0d2", "#de2d26"]);
 
-  var cFunction = function(d) {
-    console.log(d.Country);
-    return colScale[d.Country];
-  }
 
 
   // scale for the radius
@@ -158,56 +136,67 @@ console.log(countries.length);
       .style("fill", "black")
       .text(labels[0]);
 
+
   svg.selectAll(".y-axis")
       .append("text")
+      .attr("class", "text")
       .attr("transform", "rotate(-90)")
       .attr("y", 6)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .style("fill", "black")
-      .text(labels[1])
-
 
   var line = svg.append("line")
         .attr("class", "regression");
 
 
-  var tooltip = d3.select("body").append("div").attr("class", "tooltip");
-  tooltip.style("position", "absolute")
-      .style("display", "none")
-      .style("min-width", "80px")
-      .style("height", "auto")
-      .style("background", "none repeat scroll 0 0 #ffffff")
-      .style("border", "2px solid #00995c")
-      .style("padding", "10px")
-      .style("font-family", "sans-serif")
-      .style("font-size", "12px")
-      .style("text-align", "center");
+  var tooltip = d3.select(".tooltip");
+
+  // const g = svg.append('g')
+  //     .attr('transform', `translate(${margin.left},${margin.top})`);
+  // const colorLegendG = g.append('g')
+  //           .attr('transform', `translate(${60}, 150)`);
+  // colorLegendG.append('text')
+  //       .attr('class', 'legend-label')
+  //       .attr('x', -30)
+  //       .attr('y', -40)
+  //       .text("fuck");
+  // colorLegendG.call(c)
+  // .selectAll('.cell text')
+  //   .attr('dy', '0.1em');
 
 
+  update(yearOptions.property("value"), yOptions.property("value") )
 
-update(d3.select("#yearSelect").property("value"))
+  function update(year, yVar) {
 
-  function update(year) {
+
+    var xIndex = 0;
+    var yIndex = labels.indexOf(yVar);
+    var radiusIndex = 3;
+    var colorIndex = 3;
+
+
     var t = d3.transition().duration(750);
-    // even tijdelijk
 
     var yearData = dataset.filter(d => d.Time == year);
 
 
-    yearData = yearData.filter(d => (d.Datapoint[0] === d.Datapoint[0])
-                                   && (d.Datapoint[1] === d.Datapoint[1]))
+    yearData = yearData.filter(d => ((d.Datapoint[xIndex]) && d.Datapoint[xIndex] === d.Datapoint[xIndex]))
+                              //     && ( (d.Datapoint[yIndex]) && d.Datapoint[yIndex] === d.Datapoint[yIndex]))
 
 
-    var maxX = d3.max(yearData, d => d.Datapoint[0]);
-    var maxY = d3.max(yearData, d => d.Datapoint[1]);
-    var maxR = d3.max(yearData, d => d.Datapoint[2]);
-    var maxC = d3.max(yearData, d => d.Datapoint[2]);
+    var maxX = d3.max(yearData, d => d.Datapoint[xIndex]);
+    var maxY = d3.max(yearData, d => d.Datapoint[yIndex]);
+    var maxR = d3.max(yearData, d => d.Datapoint[radiusIndex]);
+    var maxC = d3.max(yearData, d => d.Datapoint[colorIndex]);
 
-    var minX = d3.min(yearData, d => d.Datapoint[0]);
-    var minY = d3.min(yearData, d => d.Datapoint[1]);
-    var minR = d3.min(yearData, d => d.Datapoint[2]);
-    var minC = d3.min(yearData, d => d.Datapoint[2]);
+
+    var minX = d3.min(yearData, d => d.Datapoint[xIndex]);
+    var minY = d3.min(yearData, d => d.Datapoint[yIndex]);
+    var minR = d3.min(yearData, d => d.Datapoint[radiusIndex]);
+    var minC = d3.min(yearData, d => d.Datapoint[colorIndex]);
+
 
 
     if (!maxX) {
@@ -216,11 +205,11 @@ update(d3.select("#yearSelect").property("value"))
     if (!maxY) {
         maxY = 1;
     }
-    if (!maxC) {
-        maxC = 1;
-    }
     if (!maxR) {
         maxR = 1;
+    }
+    if (!maxC) {
+        maxC = 1;
     }
 
     if (!minX) {
@@ -229,53 +218,57 @@ update(d3.select("#yearSelect").property("value"))
     if (!minY) {
         minY = 0;
     }
-    if (!minC) {
-        minC = 0;
-    }
     if (!minR) {
         minR = 0;
     }
+    if (!minC) {
+        minC = 0;
+    }
 
 
-    console.log("max x en y en c en r");
-    console.log(maxX);
-    console.log(maxY);
-    console.log(maxC);
-    console.log(maxR);
 
-    // the scalefactor makes the plot slightly bigger than the max values
+    // The scalefactor makes the plot slightly bigger than the max values.
     var scaleFactor = 1.05
     x.domain([0, maxX * scaleFactor]);
     y.domain([0, maxY * scaleFactor]);
-    c.domain([minC, maxC]);
     r.domain([minR, maxR]);
+    c.domain([minC, maxC])
 
 
-    svg.selectAll(".y-axis").transition(t).call(yAxis);
+
+    svg.selectAll(".y-axis").transition(t).call(yAxis).select(".text")
+        .text(labels[yIndex]);
     svg.selectAll(".x-axis").transition(t).call(xAxis);
 
 
+
     var xFunction = function(d) {
-      if (d.Datapoint[0] == null) {
+      if (d.Datapoint[xIndex] == null) {
           return margin.left + x(0);
       };
-      return margin.left + x(d.Datapoint[0]);
+      return margin.left + x(d.Datapoint[xIndex]);
     }
 
     var yFunction = function(d) {
-      if (d.Datapoint[1] == null) {
+      if (d.Datapoint[yIndex] == null) {
           return margin.top + y(0);
       };
-      return margin.top + y(d.Datapoint[1]);
+      return margin.top + y(d.Datapoint[yIndex]);
     }
 
-
+    var cFunction = function(d) {
+      if (d.Datapoint[colorIndex] == null) {
+          return c(minC);
+      };
+      return c(d.Datapoint[colorIndex]);
+    }
 
     var rFunction = function(d) {
-      if (d.Datapoint[2] == null) {
-          return r(minR);
-      };
-      return r(d.Datapoint[2]);
+      // if (d.Datapoint[radiusIndex] == null) {
+      //     return r(minR);
+      // };
+      // return r(d.Datapoint[radiusIndex]);
+      return 8;
     }
 
 
@@ -285,6 +278,8 @@ update(d3.select("#yearSelect").property("value"))
 
     circle.enter().append("circle")
         .attr("class", "circle")
+        .style("stroke", "#333333")
+        .style("stroke-width", "2")
         .merge(circle)
         .transition(t)
         .attr("cx", function(d) {
@@ -294,22 +289,14 @@ update(d3.select("#yearSelect").property("value"))
           return yFunction(d)
         })
         .attr("fill", function(d) {
-          return colScale(d.Country)
+          return cFunction(d)
         })
         .attr("r", function(d) {
           return rFunction(d)
         });
 
 
-
       var regression = getRegression();
-      console.log("dit komt eruit");
-      console.log(y(regression(minX)));
-
-      console.log("eens kijken");
-      console.log(y(regression(0)))
-      console.log(y(regression(maxX)))
-
 
 
       line.merge(line).transition(t)
@@ -326,11 +313,18 @@ update(d3.select("#yearSelect").property("value"))
 
 
 
+
+
+
+
+
       function getRegression() {
-        let regressionData = yearData.filter(d => (d.Datapoint[0]) && (d.Datapoint[0] === d.Datapoint[0]) && (d.Datapoint[1]) && (d.Datapoint[1] === d.Datapoint[1]));
-        console.log("selected data:")
-        console.log(regressionData);
-        // based on https://bl.ocks.org/ctufts/298bfe4b11989960eeeecc9394e9f118
+        // Least squares method.
+
+        // Don't use empty datapoints.
+        let regressionData = yearData.filter(d => (d.Datapoint[xIndex]) && (d.Datapoint[xIndex] === d.Datapoint[xIndex]) && (d.Datapoint[yIndex]) && (d.Datapoint[yIndex] === d.Datapoint[yIndex]));
+
+        // Based on https://bl.ocks.org/ctufts/298bfe4b11989960eeeecc9394e9f118
         let totalX = 0;
         let totalY = 0;
         let n = regressionData.length;
@@ -340,28 +334,22 @@ update(d3.select("#yearSelect").property("value"))
         let term2 = 0;
 
         for (i = 0; i < n; i++) {
-            totalX += regressionData[i].Datapoint[0];
-            totalY += regressionData[i].Datapoint[1];
+            totalX += regressionData[i].Datapoint[xIndex];
+            totalY += regressionData[i].Datapoint[yIndex];
         };
         xMean = totalX / n;
         yMean = totalY / n;
-        console.log("xmean: " + xMean );
-        console.log("ymean: " + yMean);
 
-        // calculate coefficients
+
+        // Calculate coefficients.
         var xr = 0;
         var yr = 0;
         for (i = 0; i < n; i++) {
-            // console.log(regressionData[i].Datapoint[0])
-            // console.log(regressionData[i].Datapoint[1])
-            // console.log("jaaaaaaaaaaaaaaaaaaaaa");
-            xr = regressionData[i].Datapoint[0] - xMean;
-            yr = regressionData[i].Datapoint[1] - yMean;
+            xr = regressionData[i].Datapoint[xIndex] - xMean;
+            yr = regressionData[i].Datapoint[yIndex] - yMean;
             term1 = term1 + xr * yr;
             term2 = term2 + xr * xr;
         };
-        console.log(term1);
-        console.log(term2);
 
 
         var slope = term1 / term2;
@@ -371,29 +359,24 @@ update(d3.select("#yearSelect").property("value"))
           b = 0;
           slope = 0;
         }
-        console.log("b = " + b +  " slope = " + slope);
         return function (d) {
           return b + (d * slope)
         }
 
 
-
-
       };
-
 
 
       function mouseOver() {
 
-
         // Show the tooltip when the user mouses over the bars.
-        var circle = svg.selectAll(".circle").data(yearData)
+        var circle = svg.selectAll(".circle");
         var oldR;
         circle.on("mousemove", function(d) {
-                tooltip.style("left", (d3.event.pageX - 50) + "px")
-                    .style("top", (d3.event.pageY - 200) + "px")
+                tooltip.style("left", (d3.event.pageX + 40) + "px")
+                    .style("top", (d3.event.pageY - 140) + "px")
                     .style("display", "inline-block")
-                    .html(d.Country + "<br>" + labels[0] + ":<br>" + (Math.round(d.Datapoint[0]*100)/100) + "<br>" + labels[1] +":<br>" + (Math.round(d.Datapoint[1]*100)/100) + "<br>" + labels[2] + ":<br>" + (Math.round(d.Datapoint[2]*100)/100));
+                    .html(d.Country + "<br>" + labels[xIndex] + ":<br>" + (Math.round(d.Datapoint[xIndex]*100)/100) + "<br>" + labels[yIndex] +":<br>" + d.Datapoint[yIndex] + "<br>" + labels[colorIndex] + ":<br>" + d.Datapoint[colorIndex]);
                 d3.select(this).attr("r", function(d) {
                   return rFunction(d) * 1.4;
                 });
@@ -402,9 +385,6 @@ update(d3.select("#yearSelect").property("value"))
                 tooltip.style("display", "none");
                 d3.select(this)
                 .transition(t)
-                .attr("fill", function(d) {
-                  return colScale(d.Country)
-                })
                 .attr("r", function(d) {
                   return rFunction(d)
                 });
@@ -417,10 +397,6 @@ update(d3.select("#yearSelect").property("value"))
   scatter.update = update;
 
 
-
-
-
-
 };
 
 
@@ -429,12 +405,10 @@ update(d3.select("#yearSelect").property("value"))
 
 
 
-
-
 function mergeData(dataArray) {
-  // returns [results, years, countries]
-
+  // Returns [results, years, countries]
   // Here we just merge all data together in an object with country as key, an array with data as value.
+
   var countries = new Set();
   for (var i = 0; i < dataArray.length; i++) {
     Object.keys(dataArray[i]).forEach(function(d) {
@@ -466,67 +440,26 @@ function mergeData(dataArray) {
       temp = {}
 
 
-      let a = dataArray[0][countries[j]];
-      if (a) {
+      var datapoint = [];
 
-        a = a.filter(d => (d.Time == years[i]) );
-        if (a[0]) {
-          a = a[0].Datapoint;
+      for (k = 0; k < dataArray.length; k++){
+        let a = dataArray[k][countries[j]];
+        if (a) {
+
+          a = a.filter(d => (d.Time == years[i]) );
+          if (a[0]) {
+            a = a[0].Datapoint;
+          } else {
+            a = null;
+          }
+
         } else {
           a = null;
         }
 
-      } else {
-        a = null;
+        datapoint.push(a);
       }
 
-
-      let b = dataArray[1][countries[j]];
-      if (b) {
-
-        b = b.filter(d => (d.Time == years[i]) );
-        if (b[0]) {
-          b = b[0].Datapoint;
-        } else {
-          b = null;
-        }
-
-      } else {
-        b = null;
-      }
-
-
-      let c = dataArray[2][countries[j]];
-      if (c) {
-
-        c = c.filter(d => (d.Time == years[i]) );
-        if (c[0]) {
-          c = c[0].Datapoint;
-        } else {
-          c = null;
-        }
-
-      } else {
-        c = null;
-      };
-
-
-      let d = dataArray[3][countries[j]];
-      if (d) {
-
-        d = d.filter(d => (d.Time == years[i]) );
-        if (d[0]) {
-          d = d[0].Datapoint;
-        } else {
-          d = null;
-        }
-
-      } else {
-        d = null;
-      };
-
-
-      var datapoint = [a, b, c, d];
 
       temp["Time"] = years[i];
       temp["Country"] = countries[j];
@@ -543,8 +476,6 @@ return [results, years, countries];
 
 
 
-
-
 function transformResponse(data) {
   // This function is mostly a combination of the transformResponse examples at
   // https://data.mprog.nl/course/10%20Homework/100%20D3%20Scatterplot/scripts/transformResponseV1.js
@@ -552,6 +483,7 @@ function transformResponse(data) {
 
   // Save the data.
   let originalData = data;
+  console.log(originalData);
 
 
   let seriesBool = false;
@@ -590,45 +522,41 @@ function transformResponse(data) {
   // get the time periods
   let observation;
   if (seriesBool){
-    observation = data.structure.dimensions.observation[0];
+    observation = data.structure.dimensions.observation.filter(d => d.id == "TIME_PERIOD")[0];
     // also add the time periods as a variable
     varArray.push(observation);
   } else {
-    observation = data.structure.dimensions.observation[data.structure.dimensions.observation.length - 1];
-    varArray.push(observation);
+    observation = data.structure.dimensions.observation.filter(d => d.id == "TIME_PERIOD")[0];
+    // varArray.push(observation);
   };
 
-
-  // this is an object with all combinations of the 0:0:0 format.
+  // This is an object with all combinations of the 0:0:0 format.
   // They don't necessarily all have a value, but they are all possible datapoints.
   let strings = Object.keys(dataHere);
 
 
-  // the output object has country as key and an array as value
+  // The output object has country as key and an array as value.
   let dataObject = {};
 
-  // for every possible string we made:
+
   strings.forEach(function(string) {
-    // for each observation and its index
+
+    // For each observation (a time) and its index.
     observation.values.forEach(function(observ, index){
 
-      // get the values of the observations
+      // Get the data of the observations.
       let datapoint;
       if (seriesBool){
         datapoint = dataHere[string].observations[index];
-        // console.log(dataHere[string])
       } else {
         datapoint = dataHere[string];
-        // console.log(dataHere[string])
       };
 
       if (datapoint != undefined) {
-        // console.log(datapoint);
 
-        // make a temporary object
         let tempObj = {};
 
-        // take all numbers from the string
+        // Take all numbers from the string.
         let tempString;
         if (seriesBool) {
           tempString = string.split(":").slice(0,-1);
@@ -638,19 +566,25 @@ function transformResponse(data) {
 
         // I think here we set names and explanations of variables?
         tempString.forEach(function(s, indexi) {
-          // name of the variable will be the key, value will be the value
+          // Name of the variable will be the key, value will be the value.
           tempObj[varArray[indexi].name] = varArray[indexi].values[s].name;
 
         });
 
-        // Every datapoint also needs a timestamp and actual datapoint
+        // Every datapoint also needs a timestamp and actual datapoint.
         if (seriesBool) {
           tempObj["Time"] = observ.name;
         } else {
-          tempObj["Time"] = tempObj["Year"];
+
+          if (tempObj["Year"]) {
+            tempObj["Time"] = tempObj["Year"];
+          } else {
+            tempObj["Time"] = tempObj["Time"];
+          }
+
         };
 
-        // console.log(tempObj);
+
         if (seriesBool){
           tempObj["Datapoint"] = datapoint[0];
         } else {
@@ -660,37 +594,18 @@ function transformResponse(data) {
         if (seriesBool){
           tempObj["Indicator"] = originalData.structure.dimensions.series[1].values[0].name;
         }
-        // else {
-        //   tempObj["Indicator"] = originalData.structure.dimensions.observation[1].values[0].name;
-        // }
+
 
         // Add the temporary object to thte total object
         if (dataObject[tempObj["Country"]] == undefined) {
           dataObject[tempObj["Country"]] = [tempObj];
         } else if (seriesBool) {
           dataObject[tempObj["Country"]].push(tempObj);
-        } else if (!seriesBool && (dataObject[tempObj["Country"]][dataObject[tempObj["Country"]].length - 1]["Year"] != tempObj["Year"]) ) {
+        } else if (!seriesBool && (dataObject[tempObj["Country"]][dataObject[tempObj["Country"]].length - 1]["Time"] != tempObj["Time"]) ) {
           dataObject[tempObj["Country"]].push(tempObj);
         };
       };
     });
   });
   return dataObject;
-};
-
-
-
-
-function concatData(dataArray) {
-  var result = [];
-  let key;
-
-  for (var i = 0; i < dataArray.length; i++) {
-    for (key in dataArray[i]) {
-      for (var j = 0; j < dataArray[i][key].length; j++){
-        result.push(dataArray[i][key][j]);
-      };
-    };
-  };
-  return result;
 };

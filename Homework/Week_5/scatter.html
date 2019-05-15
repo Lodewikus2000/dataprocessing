@@ -10,13 +10,39 @@
 <body>
     <script src="scatter.js" charset="utf-8"></script>
 
-    <h1>Week 5: D3 Scatterplot</h1>
-    
-    <p> Select a year:
-        <select id="yearSelect"></select>
-    </p>
+    <div class="container">
+        <h1>Week 5: D3 Scatterplot</h1>
 
-    <svg></svg>
+        <p> Leo Schreuders, student ID 5742978, for the course Data Processing
+            at UvA, spring 2019. </p>
+
+        <p>
+            The scatterplot shows the relationship between GDP on the one hand
+            and teenage pregnancy and annual worked hours on the other.
+            The color of a dot is determined by number of children living in
+            violent areas.
+        </p>
+
+        <p> Select a year:
+            <select id="yearSelect"></select>
+        </p>
+        <p> Select a Y variable:
+            <select id="yVarSelect"></select>
+        </p>
+
+        <svg></svg>
+
+        <p> Data from the OECD:
+            <ul>
+                <li>children in volent areas: <a href="https://stats.oecd.org/SDMX-JSON/data/CWB/AUS+AUT+BEL+CAN+CHL+DNK+EST+FIN+FRA+DEU+GRC+HUN+IRL+ITA+JPN+KOR+LVA+LUX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+GBR+USA.CWB11/all?startTime=2009&endTime=2016">dataset CWB, measure CWB11</a></li>
+                <li>teenage pregnancy: <a href = "https://stats.oecd.org/SDMX-JSON/data/CWB/AUS+AUT+BEL+CAN+CHL+DNK+EST+FIN+FRA+DEU+GRC+HUN+IRL+ITA+JPN+KOR+LVA+LUX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+GBR+USA.CWB46/all?startTime=2009&endTime=2016">dataset CWB, measure CWB46</a></li>
+                <li>GDP: <a href="https://stats.oecd.org/SDMX-JSON/data/SNA_TABLE1/AUS+AUT+BEL+CAN+CHL+DNK+EST+FIN+FRA+DEU+GRC+HUN+IRL+ITA+JPN+KOR+LVA+LUX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+GBR+USA.B1_GE.HCPC/all?startTime=2009&endTime=2016&dimensionAtObservation=allDimensions">dataset SNA_TABLE1, measure B1_GE.HCPC</a></li>
+                <li>Annual hours worked: <a href="https://stats.oecd.org/SDMX-JSON/data/ANHRS/AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+OECD+CRI+RUS.TE.A/all?startTime=2009&endTime=2016&dimensionAtObservation=allDimensions&pid=7fbec742-4ead-42fd-b08e-42905657c4b6"> dataset ANHRS, measure TE</a></li>
+            </ul>
+        </p>
+
+        <div class="tooltip"></div>
+    </div>
 
 </body>
 
