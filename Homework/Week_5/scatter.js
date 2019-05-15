@@ -1,7 +1,7 @@
 var w = 900;
 var h = 600;
 
-const labels = ["GDP", "% children (0-17) in violent areas", "Births per 1000 women aged 15-19",  "wealth share of top 10%",   ]
+const labels = ["GDP","Births per 1000 women aged 15-19", "% children (0-17) in violent areas", "% share of wealth of top 10%"]
 
 // Make sure these are reflected in line 33
 
@@ -23,11 +23,11 @@ window.onload = function() {
 
       var teensInViolenceBetter = transformResponse(response[0]);
       var teenPregBetter = transformResponse(response[1]);
-      var top1Better = transformResponse(response[2]);
+      var top10Better = transformResponse(response[2]);
       var GDPBetter = transformResponse(response[3]);
 
-      // the order is [x, y, colored, radius]
-      var results = mergeData([GDPBetter, teensInViolenceBetter, teenPregBetter, top1Better]);
+      // the order is [x, y, radius]
+      var results = mergeData([GDPBetter, teenPregBetter, teensInViolenceBetter, top10Better]);
 
       scatter(results[0], results[1], results[2], labels);
       console.log(d3.select("#yearSelect").property("value"));
@@ -195,21 +195,19 @@ update(d3.select("#yearSelect").property("value"))
     var yearData = dataset.filter(d => d.Time == year);
 
 
-    yearData = yearData.filter(d => (d.Datapoint[0]) && (d.Datapoint[0] === d.Datapoint[0])
-                                  && (d.Datapoint[1]) && (d.Datapoint[1] === d.Datapoint[1]))
-    console.log("deze gaan we tekenen:");
-    console.log(yearData);
+    yearData = yearData.filter(d => (d.Datapoint[0] === d.Datapoint[0])
+                                   && (d.Datapoint[1] === d.Datapoint[1]))
 
 
     var maxX = d3.max(yearData, d => d.Datapoint[0]);
     var maxY = d3.max(yearData, d => d.Datapoint[1]);
+    var maxR = d3.max(yearData, d => d.Datapoint[2]);
     var maxC = d3.max(yearData, d => d.Datapoint[2]);
-    var maxR = d3.max(yearData, d => d.Datapoint[3]);
 
     var minX = d3.min(yearData, d => d.Datapoint[0]);
     var minY = d3.min(yearData, d => d.Datapoint[1]);
+    var minR = d3.min(yearData, d => d.Datapoint[2]);
     var minC = d3.min(yearData, d => d.Datapoint[2]);
-    var minR = d3.min(yearData, d => d.Datapoint[3]);
 
 
     if (!maxX) {
@@ -274,10 +272,10 @@ update(d3.select("#yearSelect").property("value"))
 
 
     var rFunction = function(d) {
-      if (d.Datapoint[3] == null) {
+      if (d.Datapoint[2] == null) {
           return r(minR);
       };
-      return r(d.Datapoint[3]);
+      return r(d.Datapoint[2]);
     }
 
 
@@ -395,7 +393,7 @@ update(d3.select("#yearSelect").property("value"))
                 tooltip.style("left", (d3.event.pageX - 50) + "px")
                     .style("top", (d3.event.pageY - 200) + "px")
                     .style("display", "inline-block")
-                    .html(d.Country + "<br>" + labels[0] + ":<br>" + (Math.round(d.Datapoint[0]*100)/100) + "<br>" + labels[1] +":<br>" + (Math.round(d.Datapoint[1]*100)/100) + "<br>" + labels[2] + ":<br>" + (Math.round(d.Datapoint[2]*100)/100) + "<br>" + labels[3] + ":<br>" + (Math.round(d.Datapoint[3]*100)/100) );
+                    .html(d.Country + "<br>" + labels[0] + ":<br>" + (Math.round(d.Datapoint[0]*100)/100) + "<br>" + labels[1] +":<br>" + (Math.round(d.Datapoint[1]*100)/100) + "<br>" + labels[2] + ":<br>" + (Math.round(d.Datapoint[2]*100)/100));
                 d3.select(this).attr("r", function(d) {
                   return rFunction(d) * 1.4;
                 });
