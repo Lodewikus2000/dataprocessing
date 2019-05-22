@@ -53,15 +53,15 @@ function drawMap(dataset, year) {
 
   var dataHere = dataset.filter( d => (d.TIME == year) );
 
-  var giniMax = d3v5.max(dataHere, d => d.Value);
-  var giniMin = d3v5.min(dataHere, d => d.Value);
+  var giniMax = d3v5.max(dataset, d => d.Value);
+  var giniMin = d3v5.min(dataset, d => d.Value);
 
   var colorMap = {};
 
 
   var colorScale = d3v5.scaleLinear()
     .range(['#ffff4d','#ff4d4d'])
-    .domain([0,1]);
+    .domain([giniMin,giniMax]);
 
 
   dataHere.forEach(function(item) {
@@ -101,13 +101,17 @@ function drawMap(dataset, year) {
     dataHere = dataset.filter( d => (d.TIME == year) );
     dataHere = dataset.filter( d => (d.TIME == year) );
 
-    giniMax = d3v5.max(dataHere, d => d.Value);
-    giniMin = d3v5.min(dataHere, d => d.Value);
-
-    colorMap = {};
 
 
-    colorScale.domain([0,1]);
+    //colorMap = {};
+    console.log("hier");
+    console.log(colorMap);
+
+    Object.values(colorMap).forEach(function(d) {
+      d.numberOfThings = null;
+      d.fillColor = '#989898';
+    });
+
 
 
     dataHere.forEach(function(item) {
