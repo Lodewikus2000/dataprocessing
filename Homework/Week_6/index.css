@@ -1,7 +1,7 @@
 body {
   font-family: helvetica, sans-serif;
   background-color: #F8F8F8	;
-  font-weight: 100;
+  font-size: 1em;
 }
 
 h1 {
@@ -19,12 +19,30 @@ svg {
 
 
 #mapContainer {
-  width: 1024px;
-  height: 576px;
+
 }
 
-.line {
+.lineTotal {
     fill: none;
-    stroke: #ffab00;
+    stroke: #66c2a5;
     stroke-width: 3;
+}
+
+.lineFemales {
+    fill: none;
+    stroke: #fc8d62;
+    stroke-width: 3;
+}
+
+.lineMales {
+    fill: none;
+    stroke: #8da0cb;
+    stroke-width: 3;
+}
+
+#tooltip {
+  min-width: 100px;
+  height: auto;
+  background: none repeat scroll 0 0 #ffffff;
+  font-size: .8em;
 }

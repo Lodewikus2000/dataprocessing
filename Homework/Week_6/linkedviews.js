@@ -1,14 +1,14 @@
 var w = 1024;
-var h = 576;
+var h = 480;
 
-var legendHeight = 256;
+var legendHeight = .5 * h;
 var legendWidth = 24;
 
 var margin = {
     left: 20,
     right: 20,
-    top: 20,
-    bottom: 20
+    top: 40,
+    bottom: 40
 };
 
 const YEAR = 2014;
@@ -61,6 +61,7 @@ window.onload = function() {
 
 
 function drawLineGraph(dataset) {
+    drawLineGraph.update = update;
 
     // help from https://bl.ocks.org/d3noob/402dd382a51a4f6eea487f9a35566de0
 
@@ -78,57 +79,76 @@ function drawLineGraph(dataset) {
 
 
 
-
-
-
     var svg = d3v5.select("#lineSVG").attr("width", w).attr("height", h);
 
 
 
 
 
-    // x axis scale
+
+    const tooltip = d3v5.select('#tooltip');
+    const tooltipLine = svg.append('line');
+
+
+
+
+
+
+
+
+
+
+    // Scale for x.
     var xScale = d3v5.scaleLinear()
         .domain([yearMin, yearMax])
         .range([0, width]);
-    // x axis function
+    // Function for x axis.
     var xAxis = g => g
         .attr("transform", "translate(" + margin.left + "," + (margin.top + height) + ")")
         .call(d3v5.axisBottom(xScale));
-    // x axis element
+    // Element for x.
     svg.append("g")
         .attr("class", "x-axis");
+    // Set x axis.
+    svg.selectAll(".x-axis").call(xAxis);
 
 
-    // scale for y axis:
+    // Scale for y.
     var yScale = d3v5.scaleLinear().range([height, 0]);
-    // function for y axis
+    // Function for y.
     var yAxis = g => g
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         .call(d3v5.axisLeft(yScale));
-    // Add the Y Axis element
+    // Element for y.
     svg.append("g")
         .attr("class", "y-axis");
 
 
-
-    // define the line
+    // Define the line for the graph.
     var valueLine = d3v5.line()
         .x(function(d) { return xScale(d.Year); })
         .y(function(d) { return yScale(d.Value); });
 
 
-    drawLineGraph.update = update;
+    var title = svg.append("text")
+    .attr("x", w / 2)
+    .attr("y",  16)
+    .attr("class", "lineTitle")
+    .style("text-anchor", "start")
+    .style("fill", "black");
 
 
 
-    function update(countryName) {
 
-        let t = d3v5.transition().duration(750);
+    function update(countryName, speed) {
 
-        console.log("In de update van de line graph");
+        let t = d3v5.transition().duration(speed);
+
+
         countryDataTotal = dataHere.filter(d => d.COU == countryName && d.Variable == "Total population at birth");
-        console.log(countryDataTotal);
+        countryDataFemales = dataHere.filter(d => d.COU == countryName && d.Variable == "Females at birth");
+        countryDataMales = dataHere.filter(d => d.COU == countryName && d.Variable == "Males at birth");
+
 
         var ageMax = d3v5.max(countryDataTotal, d => d.Value);
 
@@ -136,23 +156,149 @@ function drawLineGraph(dataset) {
         yScale.domain([0, ageMax * scaleFactor]);
 
 
-        svg.selectAll(".line").remove();
 
-        var line = svg.selectAll(".line")
-            .data([countryDataTotal]).attr("class", "line");
 
-        line.transition().duration(1500)
-            .attr("d",line)
-
-        line.enter().append("path")
-            .attr("class", "line")
+        var lineTotal = svg.selectAll(".lineTotal").data([countryDataTotal]);
+        lineTotal.exit().remove();
+        lineTotal.enter().append("path")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .attr("class", "lineTotal")
+            .merge(lineTotal)
+            .transition(t)
             .attr("d", valueLine);
+
+        var lineFemales = svg.selectAll(".lineFemales").data([countryDataFemales]);
+        lineFemales.exit().remove();
+        lineFemales.enter().append("path")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .attr("class", "lineFemales")
+            .merge(lineFemales)
+            .transition(t)
+            .attr("d", valueLine);
+
+        var lineMales = svg.selectAll(".lineMales").data([countryDataMales]);
+        lineMales.exit().remove();
+        lineMales.enter().append("path")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .attr("class", "lineMales")
+            .merge(lineMales)
+            .transition(t)
+            .attr("d", valueLine);
+
 
         svg.selectAll(".y-axis").transition(t).call(yAxis);
 
-        svg.selectAll(".x-axis").transition(t).call(xAxis);
 
 
+        if (countryDataTotal.length > 0) {
+            title.transition(t).text("life expectancy in " + countryDataTotal[0].Country );
+        } else {
+            title.transition(t).text();
+        }
+
+
+
+
+
+
+        var dotTotal = svg.selectAll(".dotTotal").data(countryDataTotal);
+        dotTotal.exit().remove();
+        dotTotal.enter().append("circle") // Uses the enter().append() method
+            .attr("class", "dotTotal") // Assign a class for styling
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .merge(dotTotal)
+            .transition(t)
+            .attr("cx", function(d) { return xScale(d.Year) })
+            .attr("cy", function(d) { return yScale(d.Value) })
+            .attr("r", 3);
+
+        var dotFemales = svg.selectAll(".dotFemales").data(countryDataFemales);
+        dotFemales.exit().remove();
+        dotFemales.enter().append("circle") // Uses the enter().append() method
+            .attr("class", "dotFemales") // Assign a class for styling
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .merge(dotFemales)
+            .transition(t)
+            .attr("cx", function(d) { return xScale(d.Year) })
+            .attr("cy", function(d) { return yScale(d.Value) })
+            .attr("r", 3);
+
+        var dotMales = svg.selectAll(".dotMales").data(countryDataMales);
+        dotMales.exit().remove();
+        dotMales.enter().append("circle") // Uses the enter().append() method
+            .attr("class", "dotMales") // Assign a class for styling
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .merge(dotMales)
+            .transition(t)
+            .attr("cx", function(d) { return xScale(d.Year) })
+            .attr("cy", function(d) { return yScale(d.Value) })
+            .attr("r", 3);
+
+
+
+
+        tooltipBox = svg.append('rect')
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .attr('width', width)
+            .attr('height', height)
+            .attr('opacity', 0)
+            .on('mousemove', drawTooltip)
+            .on('mouseout', removeTooltip);
+
+
+        function removeTooltip() {
+
+            if (tooltip) tooltip.style('display', 'none');
+            if (tooltipLine) tooltipLine.attr('stroke', 'none');
+        }
+
+        function drawTooltip() {
+
+            const year = Math.round(xScale.invert(d3v5.mouse(tooltipBox.node())[0])) ;
+
+            dataYearTotal = countryDataTotal.filter(d => d.Year == year)[0];
+            dataYearFemales = countryDataFemales.filter(d => d.Year == year)[0];
+            dataYearMales = countryDataMales.filter(d => d.Year == year)[0];
+
+
+
+            if (dataYearTotal == undefined) {
+                dataYearTotal = {Value: "no data"};
+            };
+            if (dataYearFemales == undefined) {
+                dataYearFemales = {Value: "no data"};
+            };
+            if (dataYearMales == undefined) {
+                dataYearMales = {Value: "no data"};
+            };
+
+
+            tooltipLine.attr('stroke', 'black')
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                .attr('x1', xScale(year))
+                .attr('x2', xScale(year))
+                .attr('y1', 0)
+                .attr('y2', height);
+
+
+            tooltip
+                .html("<b>" + year + "</b>" + "<br>"
+                + "Total: " + dataYearTotal.Value + '<br>'
+                + "Female: " + dataYearFemales.Value + '<br>'
+                + "Male: " + dataYearMales.Value)
+                .style('display', 'block')
+                .style('left', d3v5.event.pageX + 20 + "px")
+                .style('top', d3v5.event.pageY - 20 + "px")
+        }
+
+
+
+
+
+
+
+
+        // einde update
     }
 
     // einde line graph
@@ -166,6 +312,9 @@ function drawLineGraph(dataset) {
 function drawMap(dataset, year) {
     drawMap.update = update;
     // help from http://jsbin.com/kuvojohapi/1/edit?html,output
+
+    d3v5.select("#mapContainer").style("width", w + "px").style("height", h +"px").style("position", "relative");
+
 
 
 
@@ -192,7 +341,7 @@ function drawMap(dataset, year) {
                     // console.log(data);
                     console.log("geography:");
                     console.log(geography);
-                    drawLineGraph.update(geography.id);
+                    drawLineGraph.update(geography.id, 500);
                     // console.log("de overeenkomende data:");
                     // console.log(dataHere.filter( d => d.COU == geography.id ));
                 });
@@ -258,7 +407,16 @@ function drawMap(dataset, year) {
       .attr("y", - 16)
       .style("text-anchor", "start")
       .style("fill", "black")
-      .text("life expectancy");
+      .text("years");
+
+
+    svg.append("text")
+    .attr("x", w / 2)
+    .attr("y",  16)
+    .attr("class", "mapTitle")
+    .style("text-anchor", "start")
+    .style("fill", "black")
+    .text("life expectancy across the world");
 
 
 
