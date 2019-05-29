@@ -362,7 +362,7 @@ function drawMap(dataset, year) {
         element: document.getElementById("mapContainer"),
         done: function(datamap) {
             datamap.svg.selectAll('.datamaps-subunit').on('click', function(geography, data) {
-                drawLineGraph.update(geography.id, speed);
+                drawLineGraph.update(geography.id, SPEED);
             });
         },
         geographyConfig: {
