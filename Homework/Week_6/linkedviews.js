@@ -1,5 +1,5 @@
 const w = 1024;
-var h = 480;
+const h = 480;
 
 const COLORLEGENDHEIGHT = .5 * h;
 const COLORLEGENDWIDTH = 24;
@@ -14,9 +14,11 @@ const margin = {
 const DEFAULTYEAR = 2015;
 const DEFAULTCOUNTRY = "CHN";
 
+const SPEED = 500;
+
 window.onload = function() {
 
-    var requests = [d3v5.json("data/life_expectancy_after.json")]
+    let requests = [d3v5.json("data/life_expectancy_after.json")]
 
     Promise.all(requests).then(function(response) {
 
@@ -37,13 +39,13 @@ window.onload = function() {
             .text(d => d);
 
 
-        life_expectancy_total = response[0].filter(d => d.Variable == "Total population at birth");
+        let life_expectancy_total = response[0].filter(d => d.Variable == "Total population at birth");
 
         drawMap(life_expectancy_total, DEFAULTYEAR);
 
 
         yearOptions.on("change", function() {
-            drawMap.update(this.value, 750);
+            drawMap.update(this.value, SPEED);
         });
 
 
@@ -69,7 +71,6 @@ function drawLineGraph(dataset) {
     yearMin = d3v5.min(dataHere, d => d.Year);
 
 
-
     let svg = d3v5.select("#lineSVG").attr("width", w).attr("height", h);
 
 
@@ -92,7 +93,7 @@ function drawLineGraph(dataset) {
         .attr("class", "x-axis")
         .append("text")
         .attr("x", width)
-        .attr("y", - 8)
+        .attr("y", -8)
         .style("text-anchor", "end")
         .style("fill", "black")
         .text("year");
@@ -111,7 +112,7 @@ function drawLineGraph(dataset) {
         .attr("class", "y-axis")
         .append("text")
 
-        .attr("x", - height * .8 )
+        .attr("x", -height * .8)
         .attr("y", 16)
         .style("text-anchor", "start")
 
@@ -122,17 +123,20 @@ function drawLineGraph(dataset) {
 
     // Define the line for the graph.
     let valueLine = d3v5.line()
-        .x(function(d) { return xScale(d.Year); })
-        .y(function(d) { return yScale(d.Value); });
+        .x(function(d) {
+            return xScale(d.Year);
+        })
+        .y(function(d) {
+            return yScale(d.Value);
+        });
 
 
     let title = svg.append("text")
         .attr("x", w / 2)
-        .attr("y",  16)
+        .attr("y", 16)
         .attr("class", "lineTitle")
         .style("text-anchor", "middle")
         .style("fill", "black");
-
 
 
     // Draw the legend with help from https://stackoverflow.com/questions/38954316/adding-legends-to-d3-js-line-charts.
@@ -159,8 +163,6 @@ function drawLineGraph(dataset) {
         .attr("y", function(d, i) {
             return i * legendBoxDistance - (legendBoxSize);
         });
-
-
 
 
     function update(countryName, speed) {
@@ -213,7 +215,7 @@ function drawLineGraph(dataset) {
 
         // Title.
         if (countryDataTotal.length > 0) {
-            title.transition(t).text("Life expectancy in " + countryDataTotal[0].Country );
+            title.transition(t).text("Life expectancy in " + countryDataTotal[0].Country);
         } else {
             title.transition(t).text();
         }
@@ -228,8 +230,12 @@ function drawLineGraph(dataset) {
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
             .merge(dotTotal)
             .transition(t)
-            .attr("cx", function(d) { return xScale(d.Year) })
-            .attr("cy", function(d) { return yScale(d.Value) })
+            .attr("cx", function(d) {
+                return xScale(d.Year)
+            })
+            .attr("cy", function(d) {
+                return yScale(d.Value)
+            })
             .attr("r", 2);
 
         let dotFemales = svg.selectAll(".dotFemales").data(countryDataFemales);
@@ -239,8 +245,12 @@ function drawLineGraph(dataset) {
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
             .merge(dotFemales)
             .transition(t)
-            .attr("cx", function(d) { return xScale(d.Year) })
-            .attr("cy", function(d) { return yScale(d.Value) })
+            .attr("cx", function(d) {
+                return xScale(d.Year)
+            })
+            .attr("cy", function(d) {
+                return yScale(d.Value)
+            })
             .attr("r", 2);
 
         let dotMales = svg.selectAll(".dotMales").data(countryDataMales);
@@ -250,12 +260,16 @@ function drawLineGraph(dataset) {
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
             .merge(dotMales)
             .transition(t)
-            .attr("cx", function(d) { return xScale(d.Year) })
-            .attr("cy", function(d) { return yScale(d.Value) })
+            .attr("cx", function(d) {
+                return xScale(d.Year)
+            })
+            .attr("cy", function(d) {
+                return yScale(d.Value)
+            })
             .attr("r", 2);
 
 
-
+        // Used this for tooltip: http://bl.ocks.org/wdickerson/64535aff478e8a9fd9d9facccfef8929.
 
         tooltipBox = svg.append('rect')
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
@@ -274,22 +288,27 @@ function drawLineGraph(dataset) {
 
         function drawTooltip() {
 
-            let year = Math.round(xScale.invert(d3v5.mouse(tooltipBox.node())[0])) ;
+            let year = Math.round(xScale.invert(d3v5.mouse(tooltipBox.node())[0]));
 
             dataYearTotal = countryDataTotal.filter(d => d.Year == year)[0];
             dataYearFemales = countryDataFemales.filter(d => d.Year == year)[0];
             dataYearMales = countryDataMales.filter(d => d.Year == year)[0];
 
 
-
             if (dataYearTotal == undefined) {
-                dataYearTotal = {Value: "no data"};
+                dataYearTotal = {
+                    Value: "no data"
+                };
             };
             if (dataYearFemales == undefined) {
-                dataYearFemales = {Value: "no data"};
+                dataYearFemales = {
+                    Value: "no data"
+                };
             };
             if (dataYearMales == undefined) {
-                dataYearMales = {Value: "no data"};
+                dataYearMales = {
+                    Value: "no data"
+                };
             };
 
 
@@ -302,10 +321,10 @@ function drawLineGraph(dataset) {
 
 
             tooltip
-                .html("<b>" + year + "</b>" + "<br>"
-                + "Total: " + dataYearTotal.Value + '<br>'
-                + "Female: " + dataYearFemales.Value + '<br>'
-                + "Male: " + dataYearMales.Value)
+                .html("<b>" + year + "</b>" + "<br>" +
+                    "Total: " + dataYearTotal.Value + '<br>' +
+                    "Female: " + dataYearFemales.Value + '<br>' +
+                    "Male: " + dataYearMales.Value)
                 .style('display', 'block')
                 .style('left', d3v5.event.pageX + 20 + "px")
                 .style('top', d3v5.event.pageY - 20 + "px")
@@ -314,73 +333,70 @@ function drawLineGraph(dataset) {
 }
 
 
-
-
-
-
 function drawMap(dataset, year) {
     // The year determines what year the map shows initially.
 
     drawMap.update = update;
-    // help from http://jsbin.com/kuvojohapi/1/edit?html,output
+    // Help from http://jsbin.com/kuvojohapi/1/edit?html,output.
 
-    d3v5.select("#mapContainer").style("width", w + "px").style("height", h +"px").style("position", "relative");
-
+    d3v5.select("#mapContainer").style("width", w + "px").style("height", h + "px").style("position", "relative");
 
     let dataHere = dataset;
 
     let defaultFillColor = '#B8B8B8';
     let colorScale = d3v5.scaleLinear()
-        .range(['#f03b20','#ffeda0'])
+        .range(['#f03b20', '#ffeda0'])
 
 
     let colorMap = {};
     dataHere.forEach(function(item) {
         let iso = item.COU;
         let value = item.Value;
-        colorMap[iso] = { numberOfThings: value, fillColor: defaultFillColor }
+        colorMap[iso] = {
+            numberOfThings: value,
+            fillColor: defaultFillColor
+        }
     });
-
 
     let map = new Datamap({
-    element: document.getElementById("mapContainer"),
-    done: function(datamap) {
-                datamap.svg.selectAll('.datamaps-subunit').on('click', function(geography, data) {
-                    drawLineGraph.update(geography.id, 500);
-                });
-            },
-    geographyConfig: {
-        highlightFillColor: function(data) {
-            if (data && data.fillColor != null) {
-                return data.fillColor;
-            } else {
-                return defaultFillColor;
-            };
+        element: document.getElementById("mapContainer"),
+        done: function(datamap) {
+            datamap.svg.selectAll('.datamaps-subunit').on('click', function(geography, data) {
+                drawLineGraph.update(geography.id, speed);
+            });
         },
-        borderColor: "909090",
-        highlightBorderColor: "#303030",
-        popupTemplate: function(geo, data) {
-            if (!data || !data.numberOfThings ){
+        geographyConfig: {
+            highlightFillColor: function(data) {
+                if (data && data.fillColor != null) {
+                    return data.fillColor;
+                } else {
+                    return defaultFillColor;
+                };
+            },
+            borderColor: "909090",
+            highlightBorderColor: "#303030",
+            popupTemplate: function(geo, data) {
+                if (!data || !data.numberOfThings) {
 
-                return ['<div class="hoverinfo"><strong>',
+                    return ['<div class="hoverinfo"><strong>',
                         geo.properties.name,
                         ': ' + "no data",
-                        '</strong></div>'].join('');
-            } else {
-
-                return ['<div class="hoverinfo"><strong>',
+                        '</strong></div>'
+                    ].join('');
+                } else {
+                    return ['<div class="hoverinfo"><strong>',
                         geo.properties.name,
                         ': ' + data.numberOfThings,
-                        '</strong></div>'].join('');
+                        '</strong></div>'
+                    ].join('');
+                }
             }
-        }
-    },
-    data: colorMap,
-
-
-    fills: { defaultFill: defaultFillColor },
+        },
+        data: colorMap,
+        fills: {
+            defaultFill: defaultFillColor
+        },
     });
-
 
 
     let dataToLegendScale = d3v5.scaleLinear()
@@ -388,12 +404,12 @@ function drawMap(dataset, year) {
 
 
     let legendScale = d3v5.scaleLinear()
-        .range(['#f03b20','#ffeda0'])
+        .range(['#f03b20', '#ffeda0'])
         .domain([0, COLORLEGENDHEIGHT]);
 
 
     let legendAxis = g => g
-        .attr("transform", "translate(" + ( margin.left + COLORLEGENDWIDTH ) +"," + (h - margin.bottom - COLORLEGENDHEIGHT) + ")")
+        .attr("transform", "translate(" + (margin.left + COLORLEGENDWIDTH) + "," + (h - margin.bottom - COLORLEGENDHEIGHT) + ")")
         .call(d3v5.axisRight(dataToLegendScale));
 
 
@@ -405,8 +421,8 @@ function drawMap(dataset, year) {
 
     svg.selectAll(".colorAxis")
         .append("text")
-        .attr("x", - COLORLEGENDWIDTH)
-        .attr("y", - 8)
+        .attr("x", -COLORLEGENDWIDTH)
+        .attr("y", -8)
         .style("text-anchor", "start")
         .style("fill", "black")
         .text("total life expectancy (years)");
@@ -414,12 +430,11 @@ function drawMap(dataset, year) {
     // Title.
     svg.append("text")
         .attr("x", w / 2)
-        .attr("y",  16)
+        .attr("y", 16)
         .attr("class", "mapTitle")
         .style("text-anchor", "middle")
         .style("fill", "black")
         .text("Life expectancy across the world");
-
 
 
     let pallete = svg.append('g')
@@ -427,7 +442,7 @@ function drawMap(dataset, year) {
 
 
     let legendData = []
-    for (i = 0; i <= 1; i = i + 0.05){
+    for (i = 0; i <= 1; i = i + 0.05) {
         legendData.push(i * COLORLEGENDHEIGHT);
     }
 
@@ -436,13 +451,12 @@ function drawMap(dataset, year) {
         .attr('fill', function(d) {
             return legendScale(d);
         })
-        .attr('x', margin.left )
+        .attr('x', margin.left)
         .attr('y', function(d, i) {
             return h - margin.bottom - (i + 1) * (COLORLEGENDHEIGHT / legendData.length);
         })
-        .attr('width', COLORLEGENDWIDTH )
+        .attr('width', COLORLEGENDWIDTH)
         .attr('height', COLORLEGENDHEIGHT / legendData.length);
-
 
 
     update(year, 0);
@@ -452,7 +466,7 @@ function drawMap(dataset, year) {
 
         let t = d3v5.transition().duration(speed);
 
-        let yearData = dataHere.filter( d => (d.Year == year) );
+        let yearData = dataHere.filter(d => (d.Year == year));
 
         let ageMax = d3v5.max(yearData, d => d.Value);
         let ageMin = d3v5.min(yearData, d => d.Value);
@@ -467,8 +481,8 @@ function drawMap(dataset, year) {
 
         // Set all country colors back to default.
         Object.values(colorMap).forEach(function(d) {
-          d.numberOfThings = null;
-          d.fillColor = defaultFillColor;
+            d.numberOfThings = null;
+            d.fillColor = defaultFillColor;
         });
 
 
@@ -476,14 +490,13 @@ function drawMap(dataset, year) {
         yearData.forEach(function(item) {
             let iso = item.COU;
             let value = item.Value;
-            colorMap[iso] = { numberOfThings: value, fillColor: colorScale(value) }
+            colorMap[iso] = {
+                numberOfThings: value,
+                fillColor: colorScale(value)
+            }
         });
-
 
         map.updateChoropleth(colorMap);
 
-
-        };
-
-
+    };
 }

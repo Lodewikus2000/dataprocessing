@@ -16,10 +16,3 @@ header  *{
   max-width: 1024px;
   margin: auto;
 }
-
-
-@media (max-width: 700px) {
-  .container{
-    margin: auto;
-  }
-}
