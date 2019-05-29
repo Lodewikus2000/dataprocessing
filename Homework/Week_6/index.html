@@ -31,14 +31,25 @@
     <div class="container">
         <h1>Week 6: D3 linked views</h1>
 
-        <p> Leo Schreuders, student ID 5742978, for the course Data Processing
-            at UvA, spring 2019. </p>
-
         <p>
-            description
+            Leo Schreuders, student ID 5742978, for the course Data Processing
+            at UvA, spring 2019.
         </p>
 
-        <p> Select  year:
+        <p>
+            Data from <a href="https://stats.oecd.org/viewhtml.aspx?datasetcode=HEALTH_STAT&lang=en#">OECD HEALTH_STAT</a> database, variables "Females at birth",
+            "Males at birth", and "Total population at birth".
+        </p>
+
+        <p>
+            In the top graph, you can compare life expectancies between
+            countries in the selected year. Click a country to see the
+            development of life expectancies for females, males, and total over
+            time in the bottom graph. Hover over the graph to see the numbers.
+        </p>
+
+        <p>
+            Select  year:
             <select id="yearSelect">
             </select>
         </p>
@@ -52,9 +63,6 @@
 
         </div>
 
-        <p> Data from OECD IDD
-
-        </p>
 
         <div id='tooltip' style='position:absolute;background-color:lightgray;padding:5px'></div>
     </div>

@@ -5,7 +5,7 @@ body {
 }
 
 h1 {
-  color: #736ee1;
+  color: #66c2a5;
 }
 
 svg {
@@ -14,6 +14,7 @@ svg {
 
 .container {
   max-width: 1024px;
+  margin: auto;
 }
 
 
@@ -40,9 +41,25 @@ svg {
     stroke-width: 3;
 }
 
+.TotalLegend {
+    fill: #66c2a5;
+}
+
+.FemalesLegend {
+    fill: #fc8d62;
+}
+
+.MalesLegend {
+    fill: #8da0cb;
+}
+
 #tooltip {
   min-width: 100px;
   height: auto;
   background: none repeat scroll 0 0 #ffffff;
+  font-size: .8em;
+}
+
+.legendText {
   font-size: .8em;
 }
