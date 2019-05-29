@@ -1,10 +1,10 @@
-var w = 1024;
+const w = 1024;
 var h = 480;
 
-var legendHeight = .5 * h;
-var legendWidth = 24;
+const COLORLEGENDHEIGHT = .5 * h;
+const COLORLEGENDWIDTH = 24;
 
-var margin = {
+const margin = {
     left: 20,
     right: 20,
     top: 40,
@@ -21,15 +21,16 @@ window.onload = function() {
     Promise.all(requests).then(function(response) {
 
 
-        var years = new Set();
+        let years = new Set();
 
         for (i = 0; i < response[0].length; i++) {
-          years.add(response[0][i].Year);
+            years.add(response[0][i].Year);
         }
         years = Array.from(years);
         years.sort();
 
-        var yearOptions = d3v5.select("#yearSelect").selectAll("option")
+        let yearOptions = d3v5.select("#yearSelect");
+        yearOptions.selectAll("option")
             .data(years.reverse())
             .enter().append("option")
             .property("selected", d => d === DEFAULTYEAR)
@@ -41,7 +42,7 @@ window.onload = function() {
         drawMap(life_expectancy_total, DEFAULTYEAR);
 
 
-        var yearOptions = d3v5.select("#yearSelect").on("change", function() {
+        yearOptions.on("change", function() {
             drawMap.update(this.value, 750);
         });
 
@@ -59,29 +60,29 @@ function drawLineGraph(dataset) {
 
     // Used help from https://bl.ocks.org/d3noob/402dd382a51a4f6eea487f9a35566de0/
 
-    var dataHere = dataset;
+    let dataHere = dataset;
 
-    var width = w - margin.left - margin.right;
-    var height = h - margin.top - margin.bottom;
+    let width = w - margin.left - margin.right;
+    let height = h - margin.top - margin.bottom;
 
     yearMax = d3v5.max(dataHere, d => d.Year);
     yearMin = d3v5.min(dataHere, d => d.Year);
 
 
 
-    var svg = d3v5.select("#lineSVG").attr("width", w).attr("height", h);
+    let svg = d3v5.select("#lineSVG").attr("width", w).attr("height", h);
 
 
-    const tooltip = d3v5.select('#tooltip');
-    const tooltipLine = svg.append('line');
+    let tooltip = d3v5.select('#tooltip');
+    let tooltipLine = svg.append('line');
 
 
     // Scale for x.
-    var xScale = d3v5.scaleLinear()
+    let xScale = d3v5.scaleLinear()
         .domain([yearMin, yearMax])
         .range([0, width]);
     // Function for x axis.
-    var xAxis = g => g
+    let xAxis = g => g
         .attr("transform", "translate(" + margin.left + "," + (margin.top + height) + ")")
         .call(d3v5.axisBottom(xScale)
             .tickFormat(d3v5.format("d"))
@@ -100,9 +101,9 @@ function drawLineGraph(dataset) {
 
 
     // Scale for y.
-    var yScale = d3v5.scaleLinear().range([height, 0]);
+    let yScale = d3v5.scaleLinear().range([height, 0]);
     // Function for y.
-    var yAxis = g => g
+    let yAxis = g => g
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         .call(d3v5.axisLeft(yScale));
     // Element for y.
@@ -120,12 +121,12 @@ function drawLineGraph(dataset) {
 
 
     // Define the line for the graph.
-    var valueLine = d3v5.line()
+    let valueLine = d3v5.line()
         .x(function(d) { return xScale(d.Year); })
         .y(function(d) { return yScale(d.Value); });
 
 
-    var title = svg.append("text")
+    let title = svg.append("text")
         .attr("x", w / 2)
         .attr("y",  16)
         .attr("class", "lineTitle")
@@ -135,12 +136,12 @@ function drawLineGraph(dataset) {
 
 
     // Draw the legend with help from https://stackoverflow.com/questions/38954316/adding-legends-to-d3-js-line-charts.
-    var legendBoxSize = 10;
-    var legendBoxDistance = 16;
+    let legendBoxSize = 10;
+    let legendBoxDistance = 16;
 
-    var legend_keys = ["Females", "Total", "Males"]
+    let legend_keys = ["Females", "Total", "Males"]
 
-    var lineLegend = svg.selectAll(".lineLegend").data(legend_keys)
+    let lineLegend = svg.selectAll(".lineLegend").data(legend_keys)
         .enter().append("g")
         .attr("class", "lineLegend")
         .attr("transform", "translate(" + (margin.left + width * .8) + "," + (height * .8) + ")");
@@ -172,7 +173,7 @@ function drawLineGraph(dataset) {
         countryDataMales = dataHere.filter(d => d.COU == countryName && d.Variable == "Males at birth");
 
 
-        var ageMax = d3v5.max(countryDataTotal, d => d.Value);
+        let ageMax = d3v5.max(countryDataTotal, d => d.Value);
 
         let scaleFactor = 1.1;
         yScale.domain([0, ageMax * scaleFactor]);
@@ -180,7 +181,7 @@ function drawLineGraph(dataset) {
 
         // Lines.
 
-        var lineTotal = svg.selectAll(".lineTotal").data([countryDataTotal]);
+        let lineTotal = svg.selectAll(".lineTotal").data([countryDataTotal]);
         lineTotal.exit().remove();
         lineTotal.enter().append("path")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
@@ -189,7 +190,7 @@ function drawLineGraph(dataset) {
             .transition(t)
             .attr("d", valueLine);
 
-        var lineFemales = svg.selectAll(".lineFemales").data([countryDataFemales]);
+        let lineFemales = svg.selectAll(".lineFemales").data([countryDataFemales]);
         lineFemales.exit().remove();
         lineFemales.enter().append("path")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
@@ -198,7 +199,7 @@ function drawLineGraph(dataset) {
             .transition(t)
             .attr("d", valueLine);
 
-        var lineMales = svg.selectAll(".lineMales").data([countryDataMales]);
+        let lineMales = svg.selectAll(".lineMales").data([countryDataMales]);
         lineMales.exit().remove();
         lineMales.enter().append("path")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
@@ -220,7 +221,7 @@ function drawLineGraph(dataset) {
 
         // Dots.
 
-        var dotTotal = svg.selectAll(".dotTotal").data(countryDataTotal);
+        let dotTotal = svg.selectAll(".dotTotal").data(countryDataTotal);
         dotTotal.exit().remove();
         dotTotal.enter().append("circle") // Uses the enter().append() method
             .attr("class", "dotTotal") // Assign a class for styling
@@ -231,7 +232,7 @@ function drawLineGraph(dataset) {
             .attr("cy", function(d) { return yScale(d.Value) })
             .attr("r", 2);
 
-        var dotFemales = svg.selectAll(".dotFemales").data(countryDataFemales);
+        let dotFemales = svg.selectAll(".dotFemales").data(countryDataFemales);
         dotFemales.exit().remove();
         dotFemales.enter().append("circle") // Uses the enter().append() method
             .attr("class", "dotFemales") // Assign a class for styling
@@ -242,7 +243,7 @@ function drawLineGraph(dataset) {
             .attr("cy", function(d) { return yScale(d.Value) })
             .attr("r", 2);
 
-        var dotMales = svg.selectAll(".dotMales").data(countryDataMales);
+        let dotMales = svg.selectAll(".dotMales").data(countryDataMales);
         dotMales.exit().remove();
         dotMales.enter().append("circle") // Uses the enter().append() method
             .attr("class", "dotMales") // Assign a class for styling
@@ -273,7 +274,7 @@ function drawLineGraph(dataset) {
 
         function drawTooltip() {
 
-            const year = Math.round(xScale.invert(d3v5.mouse(tooltipBox.node())[0])) ;
+            let year = Math.round(xScale.invert(d3v5.mouse(tooltipBox.node())[0])) ;
 
             dataYearTotal = countryDataTotal.filter(d => d.Year == year)[0];
             dataYearFemales = countryDataFemales.filter(d => d.Year == year)[0];
@@ -309,13 +310,7 @@ function drawLineGraph(dataset) {
                 .style('left', d3v5.event.pageX + 20 + "px")
                 .style('top', d3v5.event.pageY - 20 + "px")
         }
-
-
-
-
-
     }
-
 }
 
 
@@ -332,22 +327,22 @@ function drawMap(dataset, year) {
     d3v5.select("#mapContainer").style("width", w + "px").style("height", h +"px").style("position", "relative");
 
 
-    var dataHere = dataset;
+    let dataHere = dataset;
 
-    var defaultFillColor = '#B8B8B8';
-    var colorScale = d3v5.scaleLinear()
+    let defaultFillColor = '#B8B8B8';
+    let colorScale = d3v5.scaleLinear()
         .range(['#f03b20','#ffeda0'])
 
 
-    var colorMap = {};
+    let colorMap = {};
     dataHere.forEach(function(item) {
-        var iso = item.COU;
-        var value = item.Value;
+        let iso = item.COU;
+        let value = item.Value;
         colorMap[iso] = { numberOfThings: value, fillColor: defaultFillColor }
     });
 
 
-    var map = new Datamap({
+    let map = new Datamap({
     element: document.getElementById("mapContainer"),
     done: function(datamap) {
                 datamap.svg.selectAll('.datamaps-subunit').on('click', function(geography, data) {
@@ -388,17 +383,17 @@ function drawMap(dataset, year) {
 
 
 
-    var dataToLegendScale = d3v5.scaleLinear()
-        .range([legendHeight, 0]);
+    let dataToLegendScale = d3v5.scaleLinear()
+        .range([COLORLEGENDHEIGHT, 0]);
 
 
-    var legendScale = d3v5.scaleLinear()
+    let legendScale = d3v5.scaleLinear()
         .range(['#f03b20','#ffeda0'])
-        .domain([0, legendHeight]);
+        .domain([0, COLORLEGENDHEIGHT]);
 
 
-    var legendAxis = g => g
-        .attr("transform", "translate(" + ( margin.left + legendWidth ) +"," + (h - margin.bottom - legendHeight) + ")")
+    let legendAxis = g => g
+        .attr("transform", "translate(" + ( margin.left + COLORLEGENDWIDTH ) +"," + (h - margin.bottom - COLORLEGENDHEIGHT) + ")")
         .call(d3v5.axisRight(dataToLegendScale));
 
 
@@ -410,7 +405,7 @@ function drawMap(dataset, year) {
 
     svg.selectAll(".colorAxis")
         .append("text")
-        .attr("x", - legendWidth)
+        .attr("x", - COLORLEGENDWIDTH)
         .attr("y", - 8)
         .style("text-anchor", "start")
         .style("fill", "black")
@@ -427,26 +422,26 @@ function drawMap(dataset, year) {
 
 
 
-    var pallete = svg.append('g')
+    let pallete = svg.append('g')
         .attr('id', 'pallete');
 
 
-    var legendData = []
+    let legendData = []
     for (i = 0; i <= 1; i = i + 0.05){
-        legendData.push(i * legendHeight);
+        legendData.push(i * COLORLEGENDHEIGHT);
     }
 
-    var colorBar = pallete.selectAll('rect').data(legendData);
+    let colorBar = pallete.selectAll('rect').data(legendData);
     colorBar.enter().append('rect')
         .attr('fill', function(d) {
             return legendScale(d);
         })
         .attr('x', margin.left )
         .attr('y', function(d, i) {
-            return h - margin.bottom - (i + 1) * (legendHeight / legendData.length);
+            return h - margin.bottom - (i + 1) * (COLORLEGENDHEIGHT / legendData.length);
         })
-        .attr('width', legendWidth )
-        .attr('height', legendHeight / legendData.length);
+        .attr('width', COLORLEGENDWIDTH )
+        .attr('height', COLORLEGENDHEIGHT / legendData.length);
 
 
 
@@ -459,8 +454,8 @@ function drawMap(dataset, year) {
 
         let yearData = dataHere.filter( d => (d.Year == year) );
 
-        var ageMax = d3v5.max(yearData, d => d.Value);
-        var ageMin = d3v5.min(yearData, d => d.Value);
+        let ageMax = d3v5.max(yearData, d => d.Value);
+        let ageMin = d3v5.min(yearData, d => d.Value);
 
 
         colorScale.domain([ageMin, ageMax]);
@@ -479,8 +474,8 @@ function drawMap(dataset, year) {
 
         // Update the colors of countries with data.
         yearData.forEach(function(item) {
-            var iso = item.COU;
-            var value = item.Value;
+            let iso = item.COU;
+            let value = item.Value;
             colorMap[iso] = { numberOfThings: value, fillColor: colorScale(value) }
         });
 
